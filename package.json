@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/ztygod/database-course-design/issues"
   },
-  "homepage": "https://github.com/ztygod/database-course-design#readme"
+  "homepage": "https://github.com/ztygod/database-course-design#readme",
+  "devDependencies": {
+    "pretty-commit": "^0.0.1"
+  }
 }
