@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>餐饮经营管理系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    }
+    .el-header {
+      background-color: #409EFF;
+      color: #fff;
+      line-height: 60px;
+    }
+    .el-aside {
+      background-color: #545c64;
+      color: #fff;
+    }
+    .system-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .el-menu {
+      border-right: none;
+    }
+    .content-container {
+      padding: 20px;
+    }
+    .el-footer {
+      background-color: #f2f2f2;
+      color: #666;
+      line-height: 60px;
+      text-align: center;
+    }
+    .dashboard-card {
+      margin-bottom: 20px;
+    }
+    .dashboard-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dashboard-card .card-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .dashboard-card .card-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+    .dashboard-card.primary .card-value {
+      color: #409EFF;
+    }
+    .dashboard-card.success .card-value {
+      color: #67C23A;
+    }
+    .dashboard-card.warning .card-value {
+      color: #E6A23C;
+    }
+    .dashboard-card.danger .card-value {
+      color: #F56C6C;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <el-container style="height: 100vh;">
+      <el-aside width="200px">
+        <el-menu
+          :default-active="activeIndex"
+          class="el-menu-vertical-demo"
+          background-color="#545c64"
+          text-color="#fff"
+          active-text-color="#ffd04b"
+          @select="handleSelect"
+          router>
+          <el-menu-item index="dashboard">
+            <i class="el-icon-s-home"></i>
+            <span slot="title">首页</span>
+          </el-menu-item>
+          <el-submenu index="dish">
+            <template slot="title">
+              <i class="el-icon-dish"></i>
+              <span>菜品管理</span>
+            </template>
+            <el-menu-item index="dish-list">菜品列表</el-menu-item>
+            <el-menu-item index="dish-category">菜品类别</el-menu-item>
+          </el-submenu>
+          <el-submenu index="ingredient">
+            <template slot="title">
+              <i class="el-icon-shopping-cart-full"></i>
+              <span>原材料管理</span>
+            </template>
+            <el-menu-item index="ingredient-list">原材料列表</el-menu-item>
+            <el-menu-item index="supplier-list">供应商管理</el-menu-item>
+          </el-submenu>
+          <el-submenu index="order">
+            <template slot="title">
+              <i class="el-icon-s-order"></i>
+              <span>订单管理</span>
+            </template>
+            <el-menu-item index="order-list">订单列表</el-menu-item>
+            <el-menu-item index="order-create">创建订单</el-menu-item>
+          </el-submenu>
+          <el-submenu index="inventory">
+            <template slot="title">
+              <i class="el-icon-s-management"></i>
+              <span>库存管理</span>
+            </template>
+            <el-menu-item index="inventory-record">库存记录</el-menu-item>
+            <el-menu-item index="inventory-warning">库存预警</el-menu-item>
+          </el-submenu>
+          <el-submenu index="member">
+            <template slot="title">
+              <i class="el-icon-user"></i>
+              <span>会员管理</span>
+            </template>
+            <el-menu-item index="member-list">会员列表</el-menu-item>
+          </el-submenu>
+          <el-submenu index="employee">
+            <template slot="title">
+              <i class="el-icon-s-custom"></i>
+              <span>员工管理</span>
+            </template>
+            <el-menu-item index="employee-list">员工列表</el-menu-item>
+          </el-submenu>
+          <el-submenu index="statistics">
+            <template slot="title">
+              <i class="el-icon-s-data"></i>
+              <span>统计分析</span>
+            </template>
+            <el-menu-item index="sales-statistics">销售统计</el-menu-item>
+            <el-menu-item index="member-statistics">会员统计</el-menu-item>
+            <el-menu-item index="inventory-statistics">库存统计</el-menu-item>
+          </el-submenu>
+        </el-menu>
+      </el-aside>
+      
+      <el-container>
+        <el-header>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="system-title">餐饮经营管理系统</div>
+            <div>
+              <el-dropdown>
+                <span class="el-dropdown-link">
+                  管理员 <i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item>个人信息</el-dropdown-item>
+                  <el-dropdown-item>修改密码</el-dropdown-item>
+                  <el-dropdown-item>退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </div>
+        </el-header>
+        
+        <el-main>
+          <div class="content-container">
+            <router-view></router-view>
+          </div>
+        </el-main>
+        
+        <el-footer>
+          餐饮经营管理系统 &copy; 2025
+        </el-footer>
+      </el-container>
+    </el-container>
+  </div>
+
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  
+  <script>
+    // API基础URL
+    const API_BASE_URL = 'http://localhost:3000/api';
+    
+    // 配置axios
+    axios.defaults.baseURL = API_BASE_URL;
+    
+    // 首页组件
+    const Dashboard = {
+      template: `
+        <div>
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-card shadow="hover" class="dashboard-card primary">
+                <div class="card-header">
+                  <span class="card-title">今日订单</span>
+                  <i class="el-icon-s-order"></i>
+                </div>
+                <div class="card-value">{{ dashboardData.today_orders }}</div>
+                <div>较昨日 {{ compareWithYesterday(dashboardData.today_orders, 20) }}</div>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card shadow="hover" class="dashboard-card success">
+                <div class="card-header">
+                  <span class="card-title">今日销售额</span>
+                  <i class="el-icon-money"></i>
+                </div>
+                <div class="card-value">¥{{ dashboardData.today_sales.toFixed(2) }}</div>
+                <div>较昨日 {{ compareWithYesterday(dashboardData.today_sales, 3500) }}</div>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card shadow="hover" class="dashboard-card warning">
+                <div class="card-header">
+                  <span class="card-title">会员总数</span>
+                  <i class="el-icon-user"></i>
+                </div>
+                <div class="card-value">{{ dashboardData.member_count }}</div>
+                <div>本月新增 {{ getRandomInt(5, 15) }}</div>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card shadow="hover" class="dashboard-card danger">
+                <div class="card-header">
+                  <span class="card-title">库存预警</span>
+                  <i class="el-icon-warning"></i>
+                </div>
+                <div class="card-value">{{ dashboardData.warning_count }}</div>
+                <div>需要及时补充</div>
+              </el-card>
+            </el-col>
+          </el-row>
+          
+          <el-row :gutter="20" style="margin-top: 20px;">
+            <el-col :span="16">
+              <el-card shadow="hover">
+                <div slot="header">
+                  <span>销售趋势</span>
+                </div>
+                <div id="sales-chart" style="width: 100%; height: 300px;"></div>
+              </el-card>
+            </el-col>
+            <el-col :span="8">
+              <el-card shadow="hover">
+                <div slot="header">
+                  <span>热销菜品</span>
+                </div>
+                <el-table :data="dashboardData.hot_dishes" style="width: 100%">
+                  <el-table-column prop="dish_name" label="菜品名称"></el-table-column>
+                  <el-table-column prop="total_quantity" label="销量" width="80"></el-table-column>
+                </el-table>
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
+      `,
+      data() {
+        return {
+          dashboardData: {
+            today_orders: 0,
+            today_sales: 0,
+            member_count: 0,
+            warning_count: 0,
+            hot_dishes: [],
+            sales_trend: []
+          }
+        }
+      },
+      mounted() {
+        this.fetchDashboardData();
+      },
+      methods: {
+        fetchDashboardData() {
+          axios.get('/statistics/dashboard')
+            .then(response => {
+              if (response.data.code === 200) {
+                this.dashboardData = response.data.data;
+                this.$nextTick(() => {
+                  this.initSalesChart();
+                });
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              console.error('获取仪表盘数据失败:', error);
+              this.$message.error('获取仪表盘数据失败');
+              
+              // 使用模拟数据
+              this.dashboardData = {
+                today_orders: 25,
+                today_sales: 3680.50,
+                member_count: 128,
+                warning_count: 3,
+                hot_dishes: [
+                  { dish_name: '红烧肉', total_quantity: 56 },
+                  { dish_name: '宫保鸡丁', total_quantity: 48 },
+                  { dish_name: '水煮牛肉', total_quantity: 32 },
+                  { dish_name: '番茄炒蛋', total_quantity: 45 },
+                  { dish_name: '凉拌黄瓜', total_quantity: 38 }
+                ],
+                sales_trend: [
+                  { date: '2025-05-21', order_count: 18, total_amount: 2560.50 },
+                  { date: '2025-05-22', order_count: 22, total_amount: 3120.00 },
+                  { date: '2025-05-23', order_count: 25, total_amount: 3580.50 },
+                  { date: '2025-05-24', order_count: 30, total_amount: 4250.00 },
+                  { date: '2025-05-25', order_count: 28, total_amount: 3950.50 },
+                  { date: '2025-05-26', order_count: 20, total_amount: 2850.00 },
+                  { date: '2025-05-27', order_count: 25, total_amount: 3680.50 }
+                ]
+              };
+              
+              this.$nextTick(() => {
+                this.initSalesChart();
+              });
+            });
+        },
+        initSalesChart() {
+          const chartDom = document.getElementById('sales-chart');
+          const myChart = echarts.init(chartDom);
+          
+          const dates = this.dashboardData.sales_trend.map(item => item.date);
+          const amounts = this.dashboardData.sales_trend.map(item => item.total_amount);
+          const counts = this.dashboardData.sales_trend.map(item => item.order_count);
+          
+          const option = {
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            legend: {
+              data: ['销售额', '订单数']
+            },
+            xAxis: {
+              type: 'category',
+              data: dates
+            },
+            yAxis: [
+              {
+                type: 'value',
+                name: '销售额',
+                axisLabel: {
+                  formatter: '{value} 元'
+                }
+              },
+              {
+                type: 'value',
+                name: '订单数',
+                axisLabel: {
+                  formatter: '{value} 单'
+                }
+              }
+            ],
+            series: [
+              {
+                name: '销售额',
+                type: 'bar',
+                data: amounts
+              },
+              {
+                name: '订单数',
+                type: 'line',
+                yAxisIndex: 1,
+                data: counts
+              }
+            ]
+          };
+          
+          myChart.setOption(option);
+          
+          window.addEventListener('resize', function() {
+            myChart.resize();
+          });
+        },
+        compareWithYesterday(value, yesterdayValue) {
+          const diff = value - yesterdayValue;
+          const percentage = Math.abs(Math.round(diff / yesterdayValue * 100));
+          
+          if (diff > 0) {
+            return `<span style="color: #67C23A">↑ ${percentage}%</span>`;
+          } else if (diff < 0) {
+            return `<span style="color: #F56C6C">↓ ${percentage}%</span>`;
+          } else {
+            return `<span>持平</span>`;
+          }
+        },
+        getRandomInt(min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+      }
+    };
+    
+    // 菜品类别组件
+    const DishCategory = {
+      template: `
+        <div>
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>菜品类别管理</span>
+              <el-button style="float: right; padding: 3px 0" type="text" @click="handleAdd">添加类别</el-button>
+            </div>
+            
+            <el-table :data="categories" style="width: 100%" v-loading="loading">
+              <el-table-column prop="category_id" label="ID" width="80"></el-table-column>
+              <el-table-column prop="category_name" label="类别名称"></el-table-column>
+              <el-table-column prop="description" label="描述"></el-table-column>
+              <el-table-column prop="created_at" label="创建时间" width="180"></el-table-column>
+              <el-table-column label="操作" width="150">
+                <template slot-scope="scope">
+                  <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+                  <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-card>
+          
+          <!-- 添加/编辑对话框 -->
+          <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="30%">
+            <el-form :model="form" :rules="rules" ref="form" label-width="100px">
+              <el-form-item label="类别名称" prop="category_name">
+                <el-input v-model="form.category_name"></el-input>
+              </el-form-item>
+              <el-form-item label="描述">
+                <el-input type="textarea" v-model="form.description"></el-input>
+              </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="dialogVisible = false">取 消</el-button>
+              <el-button type="primary" @click="submitForm">确 定</el-button>
+            </span>
+          </el-dialog>
+        </div>
+      `,
+      data() {
+        return {
+          categories: [],
+          loading: false,
+          dialogVisible: false,
+          dialogTitle: '添加类别',
+          form: {
+            category_id: null,
+            category_name: '',
+            description: ''
+          },
+          rules: {
+            category_name: [
+              { required: true, message: '请输入类别名称', trigger: 'blur' }
+            ]
+          },
+          isEdit: false
+        }
+      },
+      created() {
+        this.fetchCategories();
+      },
+      methods: {
+        fetchCategories() {
+          this.loading = true;
+          axios.get('/category')
+            .then(response => {
+              this.loading = false;
+              if (response.data.code === 200) {
+                this.categories = response.data.data;
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              this.loading = false;
+              console.error('获取菜品类别失败:', error);
+              this.$message.error('获取菜品类别失败');
+            });
+        },
+        handleAdd() {
+          this.isEdit = false;
+          this.dialogTitle = '添加类别';
+          this.form = {
+            category_id: null,
+            category_name: '',
+            description: ''
+          };
+          this.dialogVisible = true;
+          this.$nextTick(() => {
+            this.$refs.form && this.$refs.form.clearValidate();
+          });
+        },
+        handleEdit(row) {
+          this.isEdit = true;
+          this.dialogTitle = '编辑类别';
+          this.form = { ...row };
+          this.dialogVisible = true;
+          this.$nextTick(() => {
+            this.$refs.form && this.$refs.form.clearValidate();
+          });
+        },
+        handleDelete(row) {
+          this.$confirm('确认删除该类别吗?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            axios.delete(`/category/${row.category_id}`)
+              .then(response => {
+                if (response.data.code === 200) {
+                  this.$message.success('删除成功');
+                  this.fetchCategories();
+                } else {
+                  this.$message.error(response.data.message);
+                }
+              })
+              .catch(error => {
+                console.error('删除类别失败:', error);
+                this.$message.error('删除类别失败');
+              });
+          }).catch(() => {
+            // 取消删除
+          });
+        },
+        submitForm() {
+          this.$refs.form.validate(valid => {
+            if (valid) {
+              if (this.isEdit) {
+                // 编辑
+                axios.put(`/category/${this.form.category_id}`, this.form)
+                  .then(response => {
+                    if (response.data.code === 200) {
+                      this.$message.success('更新成功');
+                      this.dialogVisible = false;
+                      this.fetchCategories();
+                    } else {
+                      this.$message.error(response.data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('更新类别失败:', error);
+                    this.$message.error('更新类别失败');
+                  });
+              } else {
+                // 添加
+                axios.post('/category', this.form)
+                  .then(response => {
+                    if (response.data.code === 201) {
+                      this.$message.success('添加成功');
+                      this.dialogVisible = false;
+                      this.fetchCategories();
+                    } else {
+                      this.$message.error(response.data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('添加类别失败:', error);
+                    this.$message.error('添加类别失败');
+                  });
+              }
+            }
+          });
+        }
+      }
+    };
+    
+    // 菜品列表组件
+    const DishList = {
+      template: `
+        <div>
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>菜品管理</span>
+              <el-button style="float: right; padding: 3px 0" type="text" @click="handleAdd">添加菜品</el-button>
+            </div>
+            
+            <el-form :inline="true" class="demo-form-inline" size="small">
+              <el-form-item label="菜品名称">
+                <el-input v-model="searchForm.dish_name" placeholder="菜品名称"></el-input>
+              </el-form-item>
+              <el-form-item label="菜品类别">
+                <el-select v-model="searchForm.category_id" placeholder="全部类别" clearable>
+                  <el-option v-for="item in categories" :key="item.category_id" :label="item.category_name" :value="item.category_id"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="状态">
+                <el-select v-model="searchForm.status" placeholder="全部状态" clearable>
+                  <el-option label="上架" :value="1"></el-option>
+                  <el-option label="下架" :value="0"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="fetchDishes">查询</el-button>
+                <el-button @click="resetSearch">重置</el-button>
+              </el-form-item>
+            </el-form>
+            
+            <el-table :data="dishes" style="width: 100%" v-loading="loading">
+              <el-table-column prop="dish_id" label="ID" width="80"></el-table-column>
+              <el-table-column prop="dish_name" label="菜品名称"></el-table-column>
+              <el-table-column prop="category_name" label="类别"></el-table-column>
+              <el-table-column prop="price" label="价格">
+                <template slot-scope="scope">
+                  ¥{{ scope.row.price.toFixed(2) }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="status" label="状态">
+                <template slot-scope="scope">
+                  <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
+                    {{ scope.row.status === 1 ? '上架' : '下架' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="250">
+                <template slot-scope="scope">
+                  <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+                  <el-button size="mini" type="success" @click="handleIngredients(scope.row)">配料</el-button>
+                  <el-button 
+                    size="mini" 
+                    :type="scope.row.status === 1 ? 'warning' : 'success'"
+                    @click="handleStatusChange(scope.row)">
+                    {{ scope.row.status === 1 ? '下架' : '上架' }}
+                  </el-button>
+                  <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-card>
+          
+          <!-- 添加/编辑对话框 -->
+          <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="40%">
+            <el-form :model="form" :rules="rules" ref="form" label-width="100px">
+              <el-form-item label="菜品名称" prop="dish_name">
+                <el-input v-model="form.dish_name"></el-input>
+              </el-form-item>
+              <el-form-item label="菜品类别" prop="category_id">
+                <el-select v-model="form.category_id" placeholder="请选择类别">
+                  <el-option v-for="item in categories" :key="item.category_id" :label="item.category_name" :value="item.category_id"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="价格" prop="price">
+                <el-input-number v-model="form.price" :precision="2" :step="0.1" :min="0"></el-input-number>
+              </el-form-item>
+              <el-form-item label="状态">
+                <el-switch v-model="form.status" :active-value="1" :inactive-value="0"></el-switch>
+                <span style="margin-left: 10px;">{{ form.status === 1 ? '上架' : '下架' }}</span>
+              </el-form-item>
+              <el-form-item label="描述">
+                <el-input type="textarea" v-model="form.description"></el-input>
+              </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="dialogVisible = false">取 消</el-button>
+              <el-button type="primary" @click="submitForm">确 定</el-button>
+            </span>
+          </el-dialog>
+          
+          <!-- 配料对话框 -->
+          <el-dialog title="菜品配料管理" :visible.sync="ingredientsDialogVisible" width="60%">
+            <div v-if="currentDish">
+              <h3>{{ currentDish.dish_name }} 的配料</h3>
+              
+              <el-form :inline="true" class="demo-form-inline" size="small">
+                <el-form-item>
+                  <el-button type="primary" @click="handleAddIngredient">添加配料</el-button>
+                </el-form-item>
+              </el-form>
+              
+              <el-table :data="dishIngredients" style="width: 100%">
+                <el-table-column prop="ingredient_name" label="原料名称"></el-table-column>
+                <el-table-column prop="quantity" label="用量"></el-table-column>
+                <el-table-column prop="unit" label="单位"></el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template slot-scope="scope">
+                    <el-button size="mini" @click="handleEditIngredient(scope.row)">编辑</el-button>
+                    <el-button size="mini" type="danger" @click="handleDeleteIngredient(scope.row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+            
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="ingredientsDialogVisible = false">关 闭</el-button>
+            </span>
+          </el-dialog>
+          
+          <!-- 添加/编辑配料对话框 -->
+          <el-dialog :title="ingredientDialogTitle" :visible.sync="ingredientFormVisible" width="30%">
+            <el-form :model="ingredientForm" :rules="ingredientRules" ref="ingredientForm" label-width="100px">
+              <el-form-item label="原料" prop="ingredient_id">
+                <el-select v-model="ingredientForm.ingredient_id" placeholder="请选择原料" filterable>
+                  <el-option v-for="item in ingredients" :key="item.ingredient_id" :label="item.ingredient_name" :value="item.ingredient_id"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="用量" prop="quantity">
+                <el-input-number v-model="ingredientForm.quantity" :precision="2" :step="0.1" :min="0"></el-input-number>
+              </el-form-item>
+              <el-form-item label="单位" prop="unit">
+                <el-input v-model="ingredientForm.unit"></el-input>
+              </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="ingredientFormVisible = false">取 消</el-button>
+              <el-button type="primary" @click="submitIngredientForm">确 定</el-button>
+            </span>
+          </el-dialog>
+        </div>
+      `,
+      data() {
+        return {
+          dishes: [],
+          categories: [],
+          ingredients: [],
+          loading: false,
+          searchForm: {
+            dish_name: '',
+            category_id: '',
+            status: ''
+          },
+          dialogVisible: false,
+          dialogTitle: '添加菜品',
+          form: {
+            dish_id: null,
+            dish_name: '',
+            category_id: '',
+            price: 0,
+            description: '',
+            status: 1
+          },
+          rules: {
+            dish_name: [
+              { required: true, message: '请输入菜品名称', trigger: 'blur' }
+            ],
+            category_id: [
+              { required: true, message: '请选择菜品类别', trigger: 'change' }
+            ],
+            price: [
+              { required: true, message: '请输入价格', trigger: 'blur' }
+            ]
+          },
+          isEdit: false,
+          
+          // 配料相关
+          ingredientsDialogVisible: false,
+          currentDish: null,
+          dishIngredients: [],
+          
+          ingredientFormVisible: false,
+          ingredientDialogTitle: '添加配料',
+          ingredientForm: {
+            relation_id: null,
+            dish_id: null,
+            ingredient_id: '',
+            quantity: 0,
+            unit: ''
+          },
+          ingredientRules: {
+            ingredient_id: [
+              { required: true, message: '请选择原料', trigger: 'change' }
+            ],
+            quantity: [
+              { required: true, message: '请输入用量', trigger: 'blur' }
+            ],
+            unit: [
+              { required: true, message: '请输入单位', trigger: 'blur' }
+            ]
+          },
+          isEditIngredient: false
+        }
+      },
+      created() {
+        this.fetchCategories();
+        this.fetchDishes();
+        this.fetchIngredients();
+      },
+      methods: {
+        fetchCategories() {
+          axios.get('/category')
+            .then(response => {
+              if (response.data.code === 200) {
+                this.categories = response.data.data;
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              console.error('获取菜品类别失败:', error);
+              this.$message.error('获取菜品类别失败');
+            });
+        },
+        fetchDishes() {
+          this.loading = true;
+          let params = {};
+          if (this.searchForm.dish_name) {
+            params.dish_name = this.searchForm.dish_name;
+          }
+          if (this.searchForm.category_id) {
+            params.category_id = this.searchForm.category_id;
+          }
+          if (this.searchForm.status !== '') {
+            params.status = this.searchForm.status;
+          }
+          
+          axios.get('/dish', { params })
+            .then(response => {
+              this.loading = false;
+              if (response.data.code === 200) {
+                this.dishes = response.data.data;
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              this.loading = false;
+              console.error('获取菜品失败:', error);
+              this.$message.error('获取菜品失败');
+            });
+        },
+        fetchIngredients() {
+          axios.get('/ingredient')
+            .then(response => {
+              if (response.data.code === 200) {
+                this.ingredients = response.data.data;
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              console.error('获取原料失败:', error);
+              this.$message.error('获取原料失败');
+            });
+        },
+        resetSearch() {
+          this.searchForm = {
+            dish_name: '',
+            category_id: '',
+            status: ''
+          };
+          this.fetchDishes();
+        },
+        handleAdd() {
+          this.isEdit = false;
+          this.dialogTitle = '添加菜品';
+          this.form = {
+            dish_id: null,
+            dish_name: '',
+            category_id: '',
+            price: 0,
+            description: '',
+            status: 1
+          };
+          this.dialogVisible = true;
+          this.$nextTick(() => {
+            this.$refs.form && this.$refs.form.clearValidate();
+          });
+        },
+        handleEdit(row) {
+          this.isEdit = true;
+          this.dialogTitle = '编辑菜品';
+          this.form = { ...row };
+          this.dialogVisible = true;
+          this.$nextTick(() => {
+            this.$refs.form && this.$refs.form.clearValidate();
+          });
+        },
+        handleDelete(row) {
+          this.$confirm('确认删除该菜品吗?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            axios.delete(`/dish/${row.dish_id}`)
+              .then(response => {
+                if (response.data.code === 200) {
+                  this.$message.success('删除成功');
+                  this.fetchDishes();
+                } else {
+                  this.$message.error(response.data.message);
+                }
+              })
+              .catch(error => {
+                console.error('删除菜品失败:', error);
+                this.$message.error('删除菜品失败');
+              });
+          }).catch(() => {
+            // 取消删除
+          });
+        },
+        handleStatusChange(row) {
+          const newStatus = row.status === 1 ? 0 : 1;
+          axios.put(`/dish/${row.dish_id}/status`, { status: newStatus })
+            .then(response => {
+              if (response.data.code === 200) {
+                this.$message.success(`${newStatus === 1 ? '上架' : '下架'}成功`);
+                row.status = newStatus;
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              console.error('更新菜品状态失败:', error);
+              this.$message.error('更新菜品状态失败');
+            });
+        },
+        submitForm() {
+          this.$refs.form.validate(valid => {
+            if (valid) {
+              if (this.isEdit) {
+                // 编辑
+                axios.put(`/dish/${this.form.dish_id}`, this.form)
+                  .then(response => {
+                    if (response.data.code === 200) {
+                      this.$message.success('更新成功');
+                      this.dialogVisible = false;
+                      this.fetchDishes();
+                    } else {
+                      this.$message.error(response.data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('更新菜品失败:', error);
+                    this.$message.error('更新菜品失败');
+                  });
+              } else {
+                // 添加
+                axios.post('/dish', this.form)
+                  .then(response => {
+                    if (response.data.code === 201) {
+                      this.$message.success('添加成功');
+                      this.dialogVisible = false;
+                      this.fetchDishes();
+                    } else {
+                      this.$message.error(response.data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('添加菜品失败:', error);
+                    this.$message.error('添加菜品失败');
+                  });
+              }
+            }
+          });
+        },
+        
+        // 配料相关方法
+        handleIngredients(row) {
+          this.currentDish = row;
+          this.fetchDishIngredients(row.dish_id);
+          this.ingredientsDialogVisible = true;
+        },
+        fetchDishIngredients(dishId) {
+          axios.get(`/dish/${dishId}/ingredients`)
+            .then(response => {
+              if (response.data.code === 200) {
+                this.dishIngredients = response.data.data;
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              console.error('获取菜品配料失败:', error);
+              this.$message.error('获取菜品配料失败');
+            });
+        },
+        handleAddIngredient() {
+          this.isEditIngredient = false;
+          this.ingredientDialogTitle = '添加配料';
+          this.ingredientForm = {
+            relation_id: null,
+            dish_id: this.currentDish.dish_id,
+            ingredient_id: '',
+            quantity: 0,
+            unit: ''
+          };
+          this.ingredientFormVisible = true;
+          this.$nextTick(() => {
+            this.$refs.ingredientForm && this.$refs.ingredientForm.clearValidate();
+          });
+        },
+        handleEditIngredient(row) {
+          this.isEditIngredient = true;
+          this.ingredientDialogTitle = '编辑配料';
+          this.ingredientForm = { ...row };
+          this.ingredientFormVisible = true;
+          this.$nextTick(() => {
+            this.$refs.ingredientForm && this.$refs.ingredientForm.clearValidate();
+          });
+        },
+        handleDeleteIngredient(row) {
+          this.$confirm('确认删除该配料吗?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            // 在实际项目中，应该调用API删除配料关系
+            // 这里简化处理，直接从数组中移除
+            const index = this.dishIngredients.findIndex(item => item.relation_id === row.relation_id);
+            if (index !== -1) {
+              this.dishIngredients.splice(index, 1);
+              this.$message.success('删除成功');
+            }
+          }).catch(() => {
+            // 取消删除
+          });
+        },
+        submitIngredientForm() {
+          this.$refs.ingredientForm.validate(valid => {
+            if (valid) {
+              // 在实际项目中，应该调用API保存配料关系
+              // 这里简化处理，直接更新数组
+              if (this.isEditIngredient) {
+                const index = this.dishIngredients.findIndex(item => item.relation_id === this.ingredientForm.relation_id);
+                if (index !== -1) {
+                  // 找到选中的原料信息
+                  const ingredient = this.ingredients.find(item => item.ingredient_id === this.ingredientForm.ingredient_id);
+                  this.ingredientForm.ingredient_name = ingredient ? ingredient.ingredient_name : '';
+                  this.dishIngredients.splice(index, 1, { ...this.ingredientForm });
+                  this.$message.success('更新成功');
+                }
+              } else {
+                // 找到选中的原料信息
+                const ingredient = this.ingredients.find(item => item.ingredient_id === this.ingredientForm.ingredient_id);
+                this.ingredientForm.ingredient_name = ingredient ? ingredient.ingredient_name : '';
+                this.ingredientForm.relation_id = Date.now(); // 模拟ID
+                this.dishIngredients.push({ ...this.ingredientForm });
+                this.$message.success('添加成功');
+              }
+              
+              this.ingredientFormVisible = false;
+            }
+          });
+        }
+      }
+    };
+    
+    // 供应商管理组件
+    const SupplierList = {
+      template: `
+        <div>
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>供应商管理</span>
+              <el-button style="float: right; padding: 3px 0" type="text" @click="handleAdd">添加供应商</el-button>
+            </div>
+            
+            <el-form :inline="true" class="demo-form-inline" size="small">
+              <el-form-item label="供应商名称">
+                <el-input v-model="searchForm.supplier_name" placeholder="供应商名称"></el-input>
+              </el-form-item>
+              <el-form-item label="联系人">
+                <el-input v-model="searchForm.contact_name" placeholder="联系人"></el-input>
+              </el-form-item>
+              <el-form-item label="电话">
+                <el-input v-model="searchForm.phone" placeholder="电话"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="fetchSuppliers">查询</el-button>
+                <el-button @click="resetSearch">重置</el-button>
+              </el-form-item>
+            </el-form>
+            
+            <el-table :data="suppliers" style="width: 100%" v-loading="loading">
+              <el-table-column prop="supplier_id" label="ID" width="80"></el-table-column>
+              <el-table-column prop="supplier_name" label="供应商名称"></el-table-column>
+              <el-table-column prop="contact_name" label="联系人"></el-table-column>
+              <el-table-column prop="phone" label="电话"></el-table-column>
+              <el-table-column prop="address" label="地址" show-overflow-tooltip></el-table-column>
+              <el-table-column prop="email" label="邮箱" show-overflow-tooltip></el-table-column>
+              <el-table-column label="操作" width="150">
+                <template slot-scope="scope">
+                  <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+                  <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-card>
+          
+          <!-- 添加/编辑对话框 -->
+          <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="40%">
+            <el-form :model="form" :rules="rules" ref="form" label-width="100px">
+              <el-form-item label="供应商名称" prop="supplier_name">
+                <el-input v-model="form.supplier_name"></el-input>
+              </el-form-item>
+              <el-form-item label="联系人" prop="contact_name">
+                <el-input v-model="form.contact_name"></el-input>
+              </el-form-item>
+              <el-form-item label="电话" prop="phone">
+                <el-input v-model="form.phone"></el-input>
+              </el-form-item>
+              <el-form-item label="地址">
+                <el-input v-model="form.address"></el-input>
+              </el-form-item>
+              <el-form-item label="邮箱">
+                <el-input v-model="form.email"></el-input>
+              </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="dialogVisible = false">取 消</el-button>
+              <el-button type="primary" @click="submitForm">确 定</el-button>
+            </span>
+          </el-dialog>
+        </div>
+      `,
+      data() {
+        return {
+          suppliers: [],
+          loading: false,
+          searchForm: {
+            supplier_name: '',
+            contact_name: '',
+            phone: ''
+          },
+          dialogVisible: false,
+          dialogTitle: '添加供应商',
+          form: {
+            supplier_id: null,
+            supplier_name: '',
+            contact_name: '',
+            phone: '',
+            address: '',
+            email: ''
+          },
+          rules: {
+            supplier_name: [
+              { required: true, message: '请输入供应商名称', trigger: 'blur' }
+            ],
+            contact_name: [
+              { required: true, message: '请输入联系人', trigger: 'blur' }
+            ],
+            phone: [
+              { required: true, message: '请输入电话', trigger: 'blur' }
+            ]
+          },
+          isEdit: false
+        }
+      },
+      created() {
+        this.fetchSuppliers();
+      },
+      methods: {
+        fetchSuppliers() {
+          this.loading = true;
+          let params = {};
+          if (this.searchForm.supplier_name) {
+            params.supplier_name = this.searchForm.supplier_name;
+          }
+          if (this.searchForm.contact_name) {
+            params.contact_name = this.searchForm.contact_name;
+          }
+          if (this.searchForm.phone) {
+            params.phone = this.searchForm.phone;
+          }
+          
+          axios.get('/supplier', { params })
+            .then(response => {
+              this.loading = false;
+              if (response.data.code === 200) {
+                this.suppliers = response.data.data;
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              this.loading = false;
+              console.error('获取供应商失败:', error);
+              this.$message.error('获取供应商失败');
+            });
+        },
+        resetSearch() {
+          this.searchForm = {
+            supplier_name: '',
+            contact_name: '',
+            phone: ''
+          };
+          this.fetchSuppliers();
+        },
+        handleAdd() {
+          this.isEdit = false;
+          this.dialogTitle = '添加供应商';
+          this.form = {
+            supplier_id: null,
+            supplier_name: '',
+            contact_name: '',
+            phone: '',
+            address: '',
+            email: ''
+          };
+          this.dialogVisible = true;
+          this.$nextTick(() => {
+            this.$refs.form && this.$refs.form.clearValidate();
+          });
+        },
+        handleEdit(row) {
+          this.isEdit = true;
+          this.dialogTitle = '编辑供应商';
+          this.form = { ...row };
+          this.dialogVisible = true;
+          this.$nextTick(() => {
+            this.$refs.form && this.$refs.form.clearValidate();
+          });
+        },
+        handleDelete(row) {
+          this.$confirm('确认删除该供应商吗?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            axios.delete(`/supplier/${row.supplier_id}`)
+              .then(response => {
+                if (response.data.code === 200) {
+                  this.$message.success('删除成功');
+                  this.fetchSuppliers();
+                } else {
+                  this.$message.error(response.data.message);
+                }
+              })
+              .catch(error => {
+                console.error('删除供应商失败:', error);
+                this.$message.error('删除供应商失败');
+              });
+          }).catch(() => {
+            // 取消删除
+          });
+        },
+        submitForm() {
+          this.$refs.form.validate(valid => {
+            if (valid) {
+              if (this.isEdit) {
+                // 编辑
+                axios.put(`/supplier/${this.form.supplier_id}`, this.form)
+                  .then(response => {
+                    if (response.data.code === 200) {
+                      this.$message.success('更新成功');
+                      this.dialogVisible = false;
+                      this.fetchSuppliers();
+                    } else {
+                      this.$message.error(response.data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('更新供应商失败:', error);
+                    this.$message.error('更新供应商失败');
+                  });
+              } else {
+                // 添加
+                axios.post('/supplier', this.form)
+                  .then(response => {
+                    if (response.data.code === 201) {
+                      this.$message.success('添加成功');
+                      this.dialogVisible = false;
+                      this.fetchSuppliers();
+                    } else {
+                      this.$message.error(response.data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('添加供应商失败:', error);
+                    this.$message.error('添加供应商失败');
+                  });
+              }
+            }
+          });
+        }
+      }
+    };
+    
+    // 销售统计组件
+    const SalesStatistics = {
+      template: `
+        <div>
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>销售统计</span>
+              <el-date-picker
+                style="float: right; margin-left: 10px;"
+                v-model="dateRange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                value-format="yyyy-MM-dd"
+                @change="handleDateChange">
+              </el-date-picker>
+            </div>
+            
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-card shadow="hover">
+                  <div slot="header">
+                    <span>销售概览</span>
+                  </div>
+                  <div style="margin-bottom: 20px;">
+                    <div style="font-size: 16px; margin-bottom: 10px;">订单总数</div>
+                    <div style="font-size: 24px; color: #409EFF;">{{ salesData.total_orders }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 16px; margin-bottom: 10px;">销售总额</div>
+                    <div style="font-size: 24px; color: #67C23A;">¥{{ salesData.total_amount.toFixed(2) }}</div>
+                  </div>
+                </el-card>
+              </el-col>
+              <el-col :span="12">
+                <el-card shadow="hover">
+                  <div slot="header">
+                    <span>销售趋势</span>
+                  </div>
+                  <div id="daily-sales-chart" style="width: 100%; height: 200px;"></div>
+                </el-card>
+              </el-col>
+            </el-row>
+            
+            <el-row :gutter="20" style="margin-top: 20px;">
+              <el-col :span="12">
+                <el-card shadow="hover">
+                  <div slot="header">
+                    <span>热销菜品</span>
+                  </div>
+                  <div id="dish-sales-chart" style="width: 100%; height: 300px;"></div>
+                </el-card>
+              </el-col>
+              <el-col :span="12">
+                <el-card shadow="hover">
+                  <div slot="header">
+                    <span>类别销售</span>
+                  </div>
+                  <div id="category-sales-chart" style="width: 100%; height: 300px;"></div>
+                </el-card>
+              </el-col>
+            </el-row>
+          </el-card>
+        </div>
+      `,
+      data() {
+        return {
+          dateRange: [],
+          salesData: {
+            total_orders: 0,
+            total_amount: 0,
+            dish_sales: [],
+            category_sales: [],
+            daily_sales: []
+          },
+          charts: {
+            dailySales: null,
+            dishSales: null,
+            categorySales: null
+          }
+        }
+      },
+      mounted() {
+        // 默认查询最近30天
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - 30);
+        
+        this.dateRange = [
+          this.formatDate(start),
+          this.formatDate(end)
+        ];
+        
+        this.fetchSalesData();
+      },
+      methods: {
+        formatDate(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        },
+        handleDateChange() {
+          this.fetchSalesData();
+        },
+        fetchSalesData() {
+          let params = {};
+          if (this.dateRange && this.dateRange.length === 2) {
+            params.start_time = this.dateRange[0] + ' 00:00:00';
+            params.end_time = this.dateRange[1] + ' 23:59:59';
+          }
+          
+          axios.get('/statistics/sales', { params })
+            .then(response => {
+              if (response.data.code === 200) {
+                this.salesData = response.data.data;
+                this.$nextTick(() => {
+                  this.initCharts();
+                });
+              } else {
+                this.$message.error(response.data.message);
+              }
+            })
+            .catch(error => {
+              console.error('获取销售统计数据失败:', error);
+              this.$message.error('获取销售统计数据失败');
+              
+              // 使用模拟数据
+              this.salesData = {
+                total_orders: 156,
+                total_amount: 22680.50,
+                dish_sales: [
+                  { dish_id: 1, dish_name: '红烧肉', total_quantity: 56, total_amount: 3808.00 },
+                  { dish_id: 2, dish_name: '宫保鸡丁', total_quantity: 48, total_amount: 2304.00 },
+                  { dish_id: 3, dish_name: '水煮牛肉', total_quantity: 32, total_amount: 2816.00 },
+                  { dish_id: 4, dish_name: '番茄炒蛋', total_quantity: 45, total_amount: 1260.00 },
+                  { dish_id: 5, dish_name: '凉拌黄瓜', total_quantity: 38, total_amount: 684.00 }
+                ],
+                category_sales: [
+                  { category_id: 1, category_name: '热菜', total_quantity: 136, total_amount: 8928.00 },
+                  { category_id: 2, category_name: '凉菜', total_quantity: 78, total_amount: 1404.00 },
+                  { category_id: 3, category_name: '汤类', total_quantity: 45, total_amount: 2250.00 },
+                  { category_id: 4, category_name: '主食', total_quantity: 89, total_amount: 1780.00 },
+                  { category_id: 5, category_name: '饮品', total_quantity: 120, total_amount: 2400.00 }
+                ],
+                daily_sales: [
+                  { date: '2025-05-21', order_count: 18, total_amount: 2560.50 },
+                  { date: '2025-05-22', order_count: 22, total_amount: 3120.00 },
+                  { date: '2025-05-23', order_count: 25, total_amount: 3580.50 },
+                  { date: '2025-05-24', order_count: 30, total_amount: 4250.00 },
+                  { date: '2025-05-25', order_count: 28, total_amount: 3950.50 },
+                  { date: '2025-05-26', order_count: 20, total_amount: 2850.00 },
+                  { date: '2025-05-27', order_count: 25, total_amount: 3680.50 }
+                ]
+              };
+              
+              this.$nextTick(() => {
+                this.initCharts();
+              });
+            });
+        },
+        initCharts() {
+          this.initDailySalesChart();
+          this.initDishSalesChart();
+          this.initCategorySalesChart();
+          
+          window.addEventListener('resize', this.resizeCharts);
+        },
+        resizeCharts() {
+          this.charts.dailySales && this.charts.dailySales.resize();
+          this.charts.dishSales && this.charts.dishSales.resize();
+          this.charts.categorySales && this.charts.categorySales.resize();
+        },
+        initDailySalesChart() {
+          const chartDom = document.getElementById('daily-sales-chart');
+          if (!chartDom) return;
+          
+          this.charts.dailySales = echarts.init(chartDom);
+          
+          const dates = this.salesData.daily_sales.map(item => item.date);
+          const amounts = this.salesData.daily_sales.map(item => item.total_amount);
+          
+          const option = {
+            tooltip: {
+              trigger: 'axis',
+              formatter: '{b}<br/>{a}: {c} 元'
+            },
+            xAxis: {
+              type: 'category',
+              data: dates,
+              axisLabel: {
+                rotate: 45
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: '销售额',
+              axisLabel: {
+                formatter: '{value} 元'
+              }
+            },
+            series: [
+              {
+                name: '销售额',
+                type: 'line',
+                data: amounts,
+                smooth: true,
+                areaStyle: {}
+              }
+            ]
+          };
+          
+          this.charts.dailySales.setOption(option);
+        },
+        initDishSalesChart() {
+          const chartDom = document.getElementById('dish-sales-chart');
+          if (!chartDom) return;
+          
+          this.charts.dishSales = echarts.init(chartDom);
+          
+          const data = this.salesData.dish_sales.map(item => ({
+            name: item.dish_name,
+            value: item.total_amount
+          }));
+          
+          const option = {
+            tooltip: {
+              trigger: 'item',
+              formatter: '{b}: {c} 元 ({d}%)'
+            },
+            legend: {
+              orient: 'vertical',
+              right: 10,
+              top: 'center',
+              data: data.map(item => item.name)
+            },
+            series: [
+              {
+                name: '菜品销售额',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                avoidLabelOverlap: false,
+                label: {
+                  show: false,
+                  position: 'center'
+                },
+                emphasis: {
+                  label: {
+                    show: true,
+                    fontSize: '18',
+                    fontWeight: 'bold'
+                  }
+                },
+                labelLine: {
+                  show: false
+                },
+                data: data
+              }
+            ]
+          };
+          
+          this.charts.dishSales.setOption(option);
+        },
+        initCategorySalesChart() {
+          const chartDom = document.getElementById('category-sales-chart');
+          if (!chartDom) return;
+          
+          this.charts.categorySales = echarts.init(chartDom);
+          
+          const categories = this.salesData.category_sales.map(item => item.category_name);
+          const amounts = this.salesData.category_sales.map(item => item.total_amount);
+          
+          const option = {
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              },
+              formatter: '{b}<br/>{a}: {c} 元'
+            },
+            xAxis: {
+              type: 'category',
+              data: categories,
+              axisLabel: {
+                interval: 0,
+                rotate: 30
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: '销售额',
+              axisLabel: {
+                formatter: '{value} 元'
+              }
+            },
+            series: [
+              {
+                name: '销售额',
+                type: 'bar',
+                data: amounts,
+                itemStyle: {
+                  color: function(params) {
+                    const colorList = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de'];
+                    return colorList[params.dataIndex % colorList.length];
+                  }
+                }
+              }
+            ]
+          };
+          
+          this.charts.categorySales.setOption(option);
+        }
+      },
+      beforeDestroy() {
+        window.removeEventListener('resize', this.resizeCharts);
+        this.charts.dailySales && this.charts.dailySales.dispose();
+        this.charts.dishSales && this.charts.dishSales.dispose();
+        this.charts.categorySales && this.charts.categorySales.dispose();
+      }
+    };
+    
+    // 定义路由
+    const routes = [
+      { path: '/', redirect: '/dashboard' },
+      { path: '/dashboard', component: Dashboard },
+      { path: '/dish-category', component: DishCategory },
+      { path: '/dish-list', component: DishList },
+      { path: '/supplier-list', component: SupplierList },
+      { path: '/sales-statistics', component: SalesStatistics },
+      // 其他路由...
+    ];
+    
+    const router = new VueRouter({
+      routes
+    });
+    
+    // 创建Vue实例
+    new Vue({
+      el: '#app',
+      router,
+      data: {
+        activeIndex: 'dashboard'
+      },
+      methods: {
+        handleSelect(key) {
+          this.activeIndex = key;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

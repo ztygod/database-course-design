@@ -1,0 +1,71 @@
+# 编译输出目录（根据构建工具不同可能是 dist、build、out）
+dist/
+build/
+out/
+
+# Node.js 依赖
+node_modules/
+
+# 缓存文件
+.cache/
+.tmp/
+temp/
+*.tsbuildinfo
+
+# 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 本地环境配置文件（包含敏感信息）
+.env
+.env.*
+!.env.example
+
+# 编辑器配置
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS 系统文件
+.DS_Store
+
+# Windows 系统文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# VS Code setting sync
+.code-workspace
+
+# 包管理器锁文件（可按需保留一份）
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# TypeScript 构建缓存
+*.tsbuildinfo
+
+# Storybook 输出
+storybook-static/
+
+# Coverage 测试输出
+coverage/
+
+# Lint 临时文件
+.eslintcache
+
+# SvelteKit / Next.js 等框架构建输出
+.next/
+.svelte-kit/
+
+# Playwright / Cypress / Vitest / Jest 等测试工具生成的文件
+test-results/
+*.spec.ts.snap
+*.spec.js.snap
+coverage-final.json
+
+# Safari Web Inspector 文件
+*.webarchive
