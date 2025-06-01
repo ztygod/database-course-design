@@ -1,75 +1,85 @@
-<template>
-  <div id="app">
-    <el-container style="height: 100vh;">
-      <el-aside width="200px">
-        <sidebar />
-      </el-aside>
-      
-      <el-container>
-        <el-header>
-          <navbar />
-        </el-header>
-        
-        <el-main>
-          <router-view />
-        </el-main>
-        
-        <el-footer>
-          <app-footer />
-        </el-footer>
-      </el-container>
-    </el-container>
-  </div>
-</template>
-
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import Sidebar from '@/components/layout/Sidebar.vue';
-import Navbar from '@/components/layout/Navbar.vue';
-import AppFooter from '@/components/layout/Footer.vue';
-
-@Component({
-  components: {
-    Sidebar,
-    Navbar,
-    AppFooter
-  }
-})
-export default class App extends Vue {}
+<script setup lang="ts">
+import { RouterLink, RouterView } from 'vue-router'
+import HelloWorld from './components/HelloWorld.vue'
 </script>
 
-<style lang="scss">
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+<template>
+  <header>
+    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+
+    <div class="wrapper">
+      <HelloWorld msg="You did it!" />
+
+      <nav>
+        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/about">About</RouterLink>
+      </nav>
+    </div>
+  </header>
+
+  <RouterView />
+</template>
+
+<style scoped>
+header {
+  line-height: 1.5;
+  max-height: 100vh;
 }
 
-#app {
-  height: 100%;
+.logo {
+  display: block;
+  margin: 0 auto 2rem;
 }
 
-.el-header {
-  background-color: #409EFF;
-  color: #fff;
-  line-height: 60px;
-}
-
-.el-aside {
-  background-color: #545c64;
-  color: #fff;
-}
-
-.el-footer {
-  background-color: #f2f2f2;
-  color: #666;
-  line-height: 60px;
+nav {
+  width: 100%;
+  font-size: 12px;
   text-align: center;
+  margin-top: 2rem;
 }
 
-.el-main {
-  padding: 20px;
-  background-color: #f5f7fa;
+nav a.router-link-exact-active {
+  color: var(--color-text);
+}
+
+nav a.router-link-exact-active:hover {
+  background-color: transparent;
+}
+
+nav a {
+  display: inline-block;
+  padding: 0 1rem;
+  border-left: 1px solid var(--color-border);
+}
+
+nav a:first-of-type {
+  border: 0;
+}
+
+@media (min-width: 1024px) {
+  header {
+    display: flex;
+    place-items: center;
+    padding-right: calc(var(--section-gap) / 2);
+  }
+
+  .logo {
+    margin: 0 2rem 0 0;
+  }
+
+  header .wrapper {
+    display: flex;
+    place-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  nav {
+    text-align: left;
+    margin-left: -1rem;
+    font-size: 1rem;
+
+    padding: 1rem 0;
+    margin-top: 1rem;
+  }
 }
 </style>

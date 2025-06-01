@@ -1,10 +1,7 @@
-import Vue from 'vue';
-import VueRouter, { RouteConfig } from 'vue-router';
+// src/router/index.js
+import { createRouter, createWebHistory } from 'vue-router'
 
-Vue.use(VueRouter);
-
-// 路由配置
-const routes: Array<RouteConfig> = [
+const routes = [
   {
     path: '/',
     redirect: '/dashboard'
@@ -12,142 +9,58 @@ const routes: Array<RouteConfig> = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/dashboard/Index.vue'),
-    meta: { title: '首页' }
+    component: () => import('../views/Dashboard.vue')
   },
   {
     path: '/dish',
     name: 'Dish',
-    component: () => import('@/views/dish/Index.vue'),
-    meta: { title: '菜品管理' },
-    children: [
-      {
-        path: 'list',
-        name: 'DishList',
-        component: () => import('@/views/dish/List.vue'),
-        meta: { title: '菜品列表' }
-      },
-      {
-        path: 'category',
-        name: 'DishCategory',
-        component: () => import('@/views/dish/Category.vue'),
-        meta: { title: '菜品类别' }
-      }
-    ]
+    component: () => import('../views/dish/List.vue')
+  },
+  {
+    path: '/category',
+    name: 'Category',
+    component: () => import('../views/dish/Category.vue')
   },
   {
     path: '/supplier',
     name: 'Supplier',
-    component: () => import('@/views/supplier/Index.vue'),
-    meta: { title: '供应商管理' }
+    component: () => import('../views/supplier/Index.vue')
   },
   {
     path: '/ingredient',
     name: 'Ingredient',
-    component: () => import('@/views/ingredient/Index.vue'),
-    meta: { title: '原材料管理' }
+    component: () => import('../views/ingredient/Index.vue')
   },
   {
     path: '/order',
     name: 'Order',
-    component: () => import('@/views/order/Index.vue'),
-    meta: { title: '订单管理' },
-    children: [
-      {
-        path: 'list',
-        name: 'OrderList',
-        component: () => import('@/views/order/List.vue'),
-        meta: { title: '订单列表' }
-      },
-      {
-        path: 'create',
-        name: 'OrderCreate',
-        component: () => import('@/views/order/Create.vue'),
-        meta: { title: '创建订单' }
-      },
-      {
-        path: 'detail/:id',
-        name: 'OrderDetail',
-        component: () => import('@/views/order/Detail.vue'),
-        meta: { title: '订单详情' }
-      }
-    ]
+    component: () => import('../views/order/List.vue')
   },
   {
     path: '/inventory',
     name: 'Inventory',
-    component: () => import('@/views/inventory/Index.vue'),
-    meta: { title: '库存管理' },
-    children: [
-      {
-        path: 'record',
-        name: 'InventoryRecord',
-        component: () => import('@/views/inventory/Record.vue'),
-        meta: { title: '库存记录' }
-      },
-      {
-        path: 'warning',
-        name: 'InventoryWarning',
-        component: () => import('@/views/inventory/Warning.vue'),
-        meta: { title: '库存预警' }
-      }
-    ]
+    component: () => import('../views/inventory/Record.vue')
   },
   {
     path: '/member',
     name: 'Member',
-    component: () => import('@/views/member/Index.vue'),
-    meta: { title: '会员管理' }
+    component: () => import('../views/member/Index.vue')
   },
   {
     path: '/employee',
     name: 'Employee',
-    component: () => import('@/views/employee/Index.vue'),
-    meta: { title: '员工管理' }
+    component: () => import('../views/employee/Index.vue')
   },
   {
     path: '/statistics',
     name: 'Statistics',
-    component: () => import('@/views/statistics/Index.vue'),
-    meta: { title: '统计分析' },
-    children: [
-      {
-        path: 'sales',
-        name: 'SalesStatistics',
-        component: () => import('@/views/statistics/Sales.vue'),
-        meta: { title: '销售统计' }
-      },
-      {
-        path: 'member',
-        name: 'MemberStatistics',
-        component: () => import('@/views/statistics/Member.vue'),
-        meta: { title: '会员统计' }
-      },
-      {
-        path: 'inventory',
-        name: 'InventoryStatistics',
-        component: () => import('@/views/statistics/Inventory.vue'),
-        meta: { title: '库存统计' }
-      }
-    ]
-  },
-  {
-    path: '*',
-    redirect: '/dashboard'
+    component: () => import('../views/statistics/Index.vue')
   }
-];
+]
 
-const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHistory(),
   routes
-});
+})
 
-// 路由守卫
-router.beforeEach((to, from, next) => {
-  // 设置页面标题
-  document.title = to.meta?.title ? `${to.meta.title} - 餐饮经营管理系统` : '餐饮经营管理系统';
-  next();
-});
-
-export default router;
+export default router
