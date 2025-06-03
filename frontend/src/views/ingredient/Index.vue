@@ -37,26 +37,26 @@
         <el-table-column prop="ingredient_name" label="原材料名称" min-width="120"></el-table-column>
         <el-table-column prop="supplier_name" label="供应商" min-width="120"></el-table-column>
         <el-table-column prop="stock_quantity" label="库存数量">
-          <template slot-scope="scope">
-            {{ scope.row.stock_quantity }} {{ scope.row.unit || '单位' }}
+          <template #default="{ row }">
+            {{ row.stock_quantity }} {{ row.unit || '单位' }}
           </template>
         </el-table-column>
         <el-table-column prop="cost_price" label="成本价">
-          <template slot-scope="scope">
-            {{ scope.row.cost_price | formatMoney }} 元
+          <template #default="{ row }">
+            {{ row.cost_price | formatMoney }} 元
           </template>
         </el-table-column>
         <el-table-column prop="warning_quantity" label="预警数量">
-          <template slot-scope="scope">
-            {{ scope.row.warning_quantity }} {{ scope.row.unit || '单位' }}
+          <template #default="{ row }">
+            {{ row.warning_quantity }} {{ row.unit || '单位' }}
           </template>
         </el-table-column>
         <el-table-column prop="description" label="描述" min-width="150"></el-table-column>
         <el-table-column label="操作" width="200" align="center">
-          <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="success" @click="handleInventoryIn(scope.row)">入库</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+          <template #default="{ row }">
+            <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button size="mini" type="success" @click="handleInventoryIn(row)">入库</el-button>
+            <el-button size="mini" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -75,7 +75,7 @@
     </el-card>
     
     <!-- 添加/编辑原材料对话框 -->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="原材料名称" prop="ingredient_name">
           <el-input v-model="form.ingredient_name" placeholder="请输入原材料名称"></el-input>
@@ -103,14 +103,14 @@
           <el-input type="textarea" v-model="form.description" placeholder="请输入描述"></el-input>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm">确 定</el-button>
-      </div>
+      </template>
     </el-dialog>
     
     <!-- 入库对话框 -->
-    <el-dialog title="原材料入库" :visible.sync="inventoryDialogVisible" width="400px">
+    <el-dialog title="原材料入库" v-model="inventoryDialogVisible" width="400px">
       <el-form ref="inventoryForm" :model="inventoryForm" :rules="inventoryRules" label-width="100px">
         <el-form-item label="原材料">
           <span>{{ currentIngredient.ingredient_name }}</span>
@@ -125,210 +125,203 @@
           <el-input type="textarea" v-model="inventoryForm.notes" placeholder="请输入备注"></el-input>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="inventoryDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitInventory">确 定</el-button>
-      </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import { getIngredients, getIngredient, createIngredient, updateIngredient, deleteIngredient } from '@/api/ingredient';
-import { getAllSuppliers } from '@/api/supplier';
-import { createInventoryRecord } from '@/api/inventory';
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '@/api/ingredient'
+import { getAllSuppliers } from '@/api/supplier'
+import { createInventoryRecord } from '@/api/inventory'
 
-export default {
-  name: 'IngredientIndex',
-  data() {
-    return {
-      loading: false,
-      ingredientList: [],
-      total: 0,
-      queryParams: {
-        page: 1,
-        limit: 10,
-        ingredient_name: '',
-        supplier_id: ''
-      },
-      
-      supplierOptions: [],
-      
-      dialogVisible: false,
-      dialogTitle: '',
-      form: {
-        ingredient_name: '',
-        supplier_id: '',
-        unit: '',
-        cost_price: 0,
-        warning_quantity: 10,
-        description: ''
-      },
-      
-      rules: {
-        ingredient_name: [{ required: true, message: '请输入原材料名称', trigger: 'blur' }],
-        supplier_id: [{ required: true, message: '请选择供应商', trigger: 'change' }],
-        unit: [{ required: true, message: '请输入计量单位', trigger: 'blur' }],
-        cost_price: [{ required: true, message: '请输入成本价', trigger: 'blur' }],
-        warning_quantity: [{ required: true, message: '请输入预警数量', trigger: 'blur' }]
-      },
-      
-      inventoryDialogVisible: false,
-      currentIngredient: {},
-      inventoryForm: {
-        quantity: 1,
-        notes: ''
-      },
-      
-      inventoryRules: {
-        quantity: [{ required: true, message: '请输入入库数量', trigger: 'blur' }]
-      }
-    }
-  },
-  created() {
-    this.getIngredientList();
-    this.getSupplierOptions();
-  },
-  methods: {
-    async getIngredientList() {
-      this.loading = true;
-      try {
-        const res = await getIngredients(this.queryParams);
-        this.ingredientList = res.data.items || [];
-        this.total = res.data.total || 0;
-      } catch (error) {
-        console.error('获取原材料列表失败:', error);
-        this.$message.error('获取原材料列表失败');
-      } finally {
-        this.loading = false;
-      }
-    },
-    
-    async getSupplierOptions() {
-      try {
-        const res = await getAllSuppliers();
-        this.supplierOptions = res.data || [];
-      } catch (error) {
-        console.error('获取供应商列表失败:', error);
-      }
-    },
-    
-    handleQuery() {
-      this.queryParams.page = 1;
-      this.getIngredientList();
-    },
-    
-    resetQuery() {
-      this.queryParams = {
-        page: 1,
-        limit: 10,
-        ingredient_name: '',
-        supplier_id: ''
-      };
-      this.getIngredientList();
-    },
-    
-    handleSizeChange(val) {
-      this.queryParams.limit = val;
-      this.getIngredientList();
-    },
-    
-    handleCurrentChange(val) {
-      this.queryParams.page = val;
-      this.getIngredientList();
-    },
-    
-    handleAdd() {
-      this.dialogTitle = '添加原材料';
-      this.form = {
-        ingredient_name: '',
-        supplier_id: '',
-        unit: '',
-        cost_price: 0,
-        warning_quantity: 10,
-        description: ''
-      };
-      this.dialogVisible = true;
-    },
-    
-    handleEdit(row) {
-      this.dialogTitle = '编辑原材料';
-      this.form = JSON.parse(JSON.stringify(row));
-      this.dialogVisible = true;
-    },
-    
-    async handleDelete(row) {
-      try {
-        await this.$confirm('确认删除该原材料吗？', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        });
-        
-        await deleteIngredient(row.ingredient_id);
-        this.$message.success('删除成功');
-        this.getIngredientList();
-      } catch (error) {
-        console.error('删除原材料失败:', error);
-      }
-    },
-    
-    handleInventoryIn(row) {
-      this.currentIngredient = row;
-      this.inventoryForm = {
-        quantity: 1,
-        notes: ''
-      };
-      this.inventoryDialogVisible = true;
-    },
-    
-    submitForm() {
-      this.$refs.form.validate(async valid => {
-        if (!valid) return;
-        
-        try {
-          if (this.form.ingredient_id) {
-            // 更新
-            await updateIngredient(this.form.ingredient_id, this.form);
-            this.$message.success('更新成功');
-          } else {
-            // 新增
-            await createIngredient(this.form);
-            this.$message.success('添加成功');
-          }
-          
-          this.dialogVisible = false;
-          this.getIngredientList();
-        } catch (error) {
-          console.error('保存原材料失败:', error);
-          this.$message.error('保存原材料失败');
-        }
-      });
-    },
-    
-    submitInventory() {
-      this.$refs.inventoryForm.validate(async valid => {
-        if (!valid) return;
-        
-        try {
-          // 创建入库记录
-          await createInventoryRecord({
-            ingredient_id: this.currentIngredient.ingredient_id,
-            type: 'in', // 入库
-            quantity: this.inventoryForm.quantity,
-            notes: this.inventoryForm.notes
-          });
-          
-          this.$message.success('入库成功');
-          this.inventoryDialogVisible = false;
-          this.getIngredientList();
-        } catch (error) {
-          console.error('入库失败:', error);
-          this.$message.error('入库失败');
-        }
-      });
-    }
+const loading = ref(false)
+const ingredientList = ref([])
+const total = ref(0)
+const queryParams = reactive({
+  page: 1,
+  limit: 10,
+  ingredient_name: '',
+  supplier_id: ''
+})
+
+const supplierOptions = ref([])
+
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const form = reactive({
+  ingredient_name: '',
+  supplier_id: '',
+  unit: '',
+  cost_price: 0,
+  warning_quantity: 10,
+  description: ''
+})
+
+const rules = {
+  ingredient_name: [{ required: true, message: '请输入原材料名称', trigger: 'blur' }],
+  supplier_id: [{ required: true, message: '请选择供应商', trigger: 'change' }],
+  unit: [{ required: true, message: '请输入计量单位', trigger: 'blur' }],
+  cost_price: [{ required: true, message: '请输入成本价', trigger: 'blur' }],
+  warning_quantity: [{ required: true, message: '请输入预警数量', trigger: 'blur' }]
+}
+
+const inventoryDialogVisible = ref(false)
+const currentIngredient = ref({})
+const inventoryForm = reactive({
+  quantity: 1,
+  notes: ''
+})
+
+const inventoryRules = {
+  quantity: [{ required: true, message: '请输入入库数量', trigger: 'blur' }]
+}
+
+// const message = useMessage()
+// const confirm = useConfirm()
+
+onMounted(() => {
+  getIngredientList()
+  getSupplierOptions()
+})
+
+async function getIngredientList() {
+  loading.value = true
+  try {
+    const res = await getIngredients(queryParams)
+    ingredientList.value = res.data.items || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取原材料列表失败:', error)
+    ElMessage.error('获取原材料列表失败')
+  } finally {
+    loading.value = false
   }
+}
+
+async function getSupplierOptions() {
+  try {
+    const res = await getAllSuppliers()
+    supplierOptions.value = res.data || []
+  } catch (error) {
+    console.error('获取供应商列表失败:', error)
+  }
+}
+
+function handleQuery() {
+  queryParams.page = 1
+  getIngredientList()
+}
+
+function resetQuery() {
+  queryParams.ingredient_name = ''
+  queryParams.supplier_id = ''
+  handleQuery()
+}
+
+function handleSizeChange(val) {
+  queryParams.limit = val
+  getIngredientList()
+}
+
+function handleCurrentChange(val) {
+  queryParams.page = val
+  getIngredientList()
+}
+
+function handleAdd() {
+  dialogTitle.value = '添加原材料'
+  Object.assign(form, {
+    ingredient_name: '',
+    supplier_id: '',
+    unit: '',
+    cost_price: 0,
+    warning_quantity: 10,
+    description: ''
+  })
+  dialogVisible.value = true
+}
+
+function handleEdit(row) {
+  dialogTitle.value = '编辑原材料'
+  Object.assign(form, row)
+  dialogVisible.value = true
+}
+
+async function handleDelete(row) {
+  try {
+    await ElMessageBox('确认删除该原材料吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    await deleteIngredient(row.ingredient_id)
+    ElMessage.success('删除成功')
+    getIngredientList()
+  } catch (error) {
+    console.error('删除原材料失败:', error)
+  }
+}
+
+function handleInventoryIn(row) {
+  currentIngredient.value = row
+  Object.assign(inventoryForm, {
+    quantity: 1,
+    notes: ''
+  })
+  inventoryDialogVisible.value = true
+}
+
+function submitForm() {
+  const formRef = ref(null)
+  formRef.value.validate(async (valid) => {
+    if (!valid) return
+    
+    try {
+      if (form.ingredient_id) {
+        await updateIngredient(form.ingredient_id, form)
+        ElMessage.success('更新成功')
+      } else {
+        await createIngredient(form)
+        ElMessage.success('添加成功')
+      }
+      
+      dialogVisible.value = false
+      getIngredientList()
+    } catch (error) {
+      console.error('保存原材料失败:', error)
+      ElMessage.error('保存原材料失败')
+    }
+  })
+}
+
+function submitInventory() {
+  const inventoryFormRef = ref(null)
+  inventoryFormRef.value.validate(async (valid) => {
+    if (!valid) return
+    
+    try {
+      await createInventoryRecord({
+        ingredient_id: currentIngredient.value.ingredient_id,
+        type: 'in',
+        quantity: inventoryForm.quantity,
+        notes: inventoryForm.notes
+      })
+      
+      ElMessage.success('入库成功')
+      inventoryDialogVisible.value = false
+      getIngredientList()
+    } catch (error) {
+      console.error('入库失败:', error)
+      ElMessage.error('入库失败')
+    }
+  })
 }
 </script>
 

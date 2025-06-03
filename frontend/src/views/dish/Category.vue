@@ -37,7 +37,7 @@
     </el-card>
 
     <!-- 添加/编辑类别对话框 -->
-    <el-dialog :title="dialogTitle" v-model:visible="dialogVisible" width="500px" append-to-body>
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="类别名称" prop="category_name">
           <el-input v-model="form.category_name" placeholder="请输入类别名称"></el-input>
@@ -47,21 +47,29 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitForm">确定</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import moment from 'moment'
-// import Pagination from '@/components/common/Pagination.vue'
-// import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/category'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import Pagination from '@/components/common/Pagination.vue'
+import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/category'
+
+interface Category {
+  category_id: number | undefined;
+  category_name: string;
+  description: string;
+  created_at: string;
+}
 
 const loading = ref(false)
-const categoryList = ref<any[]>([])
+const categoryList = ref<Category[]>([])
 const total = ref(0)
 const queryParams = reactive({
   page: 1,
@@ -70,10 +78,11 @@ const queryParams = reactive({
 
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
-const form = reactive({
-  category_id: undefined as number | undefined,
+const form = reactive<Category>({
+  category_id: undefined,
   category_name: '',
-  description: ''
+  description: '',
+  created_at: ''
 })
 
 const rules = {
@@ -86,7 +95,6 @@ async function getCategoryList() {
   loading.value = true
   try {
     // const res = await getCategories(queryParams)
-    // 模拟接口返回数据结构
     const res = {
       data: {
         items: [
@@ -100,7 +108,7 @@ async function getCategoryList() {
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取类别列表失败:', error)
-    // this.$message.error('获取类别列表失败') // 组件内 this 不适用，改用全局消息或外部注入
+    ElMessage.error('获取类别列表失败')
   } finally {
     loading.value = false
   }
@@ -118,7 +126,7 @@ function handleAdd() {
   dialogVisible.value = true
 }
 
-function handleEdit(row: any) {
+function handleEdit(row: Category) {
   dialogTitle.value = '编辑类别'
   form.category_id = row.category_id
   form.category_name = row.category_name
@@ -126,45 +134,42 @@ function handleEdit(row: any) {
   dialogVisible.value = true
 }
 
-async function handleDelete(row: any) {
+async function handleDelete(row: Category) {
   try {
-    // await ElMessageBox.confirm('确认删除该类别吗？删除后关联的菜品将无法显示', '警告', {
-    //   confirmButtonText: '确定',
-    //   cancelButtonText: '取消',
-    //   type: 'warning'
-    // })
-    const confirm = window.confirm('确认删除该类别吗？删除后关联的菜品将无法显示')
-    if (!confirm) return
-
-    // await deleteCategory(row.category_id)
+    await ElMessageBox.confirm('确认删除该类别吗？删除后关联的菜品将无法显示', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await deleteCategory(row.category_id)
     console.log('删除类别id:', row.category_id)
-    // ElMessage.success('删除成功')
+    ElMessage.success('删除成功')
     getCategoryList()
   } catch (error) {
     console.error('删除类别失败:', error)
+    ElMessage.error('删除类别失败')
   }
 }
 
 function submitForm() {
-  // @ts-ignore
-  formRef.value.validate(async (valid: boolean) => {
+  formRef.value?.validate(async (valid: boolean) => {
     if (!valid) return
 
     try {
       if (form.category_id) {
-        // await updateCategory(form.category_id, form)
+        await updateCategory(form.category_id, form)
         console.log('更新类别', form)
-        // ElMessage.success('更新成功')
+        ElMessage.success('更新成功')
       } else {
-        // await createCategory(form)
+        await createCategory(form)
         console.log('添加类别', form)
-        // ElMessage.success('添加成功')
+        ElMessage.success('添加成功')
       }
       dialogVisible.value = false
       getCategoryList()
     } catch (error) {
       console.error('保存类别失败:', error)
-      // ElMessage.error('保存类别失败')
+      ElMessage.error('保存类别失败')
     }
   })
 }

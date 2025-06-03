@@ -1,4 +1,5 @@
-import request from '../utils/request';
+
+import request from "@/utils/request";
 
 // 获取所有菜品类别
 export function getAllCategories() {

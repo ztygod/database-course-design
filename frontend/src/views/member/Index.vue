@@ -4,7 +4,7 @@
       <h2>会员管理</h2>
       <el-button type="primary" @click="handleAdd">添加会员</el-button>
     </div>
-    
+
     <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="会员姓名">
@@ -26,49 +26,45 @@
         </el-form-item>
       </el-form>
     </el-card>
-    
+
     <el-card shadow="hover" class="table-container">
-      <el-table
-        v-loading="loading"
-        :data="memberList"
-        border
-        style="width: 100%">
+      <el-table v-loading="loading" :data="memberList" border style="width: 100%">
         <el-table-column type="index" width="50" align="center"></el-table-column>
         <el-table-column prop="card_number" label="会员卡号" width="120"></el-table-column>
         <el-table-column prop="member_name" label="会员姓名" min-width="100"></el-table-column>
         <el-table-column prop="gender" label="性别" width="60" align="center">
-          <template slot-scope="scope">
-            {{ scope.row.gender === 'M' ? '男' : (scope.row.gender === 'F' ? '女' : '未知') }}
+          <template #default="{ row }">
+            {{ row.gender === 'M' ? '男' : row.gender === 'F' ? '女' : '未知' }}
           </template>
         </el-table-column>
         <el-table-column prop="phone" label="联系电话" min-width="120"></el-table-column>
         <el-table-column prop="level" label="会员等级" width="100">
-          <template slot-scope="scope">
-            <el-tag :type="getLevelType(scope.row.level)">
-              {{ getLevelName(scope.row.level) }}
+          <template #default="{ row }">
+            <el-tag :type="getLevelType(row.level)">
+              {{ getLevelName(row.level) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="points" label="积分" width="80" align="center"></el-table-column>
         <el-table-column prop="register_date" label="注册日期" width="120">
-          <template slot-scope="scope">
-            {{ scope.row.register_date | formatDate }}
+          <template #default="{ row }">
+            {{ row.register_date | formatDate }}
           </template>
         </el-table-column>
         <el-table-column prop="birthday" label="生日" width="120">
-          <template slot-scope="scope">
-            {{ scope.row.birthday | formatDate }}
+          <template #default="{ row }">
+            {{ row.birthday | formatDate }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" align="center">
-          <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="info" @click="handleConsumption(scope.row)">消费记录</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+          <template #default="{ row }">
+            <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button size="mini" type="info" @click="handleConsumption(row)">消费记录</el-button>
+            <el-button size="mini" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
-      
+
       <div class="pagination-container">
         <el-pagination
           @size-change="handleSizeChange"
@@ -81,9 +77,9 @@
         </el-pagination>
       </div>
     </el-card>
-    
+
     <!-- 添加/编辑会员对话框 -->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="会员卡号" prop="card_number">
           <el-input v-model="form.card_number" placeholder="请输入会员卡号"></el-input>
@@ -111,12 +107,7 @@
           <el-input-number v-model="form.points" :min="0" :step="100" style="width: 100%;"></el-input-number>
         </el-form-item>
         <el-form-item label="生日" prop="birthday">
-          <el-date-picker
-            v-model="form.birthday"
-            type="date"
-            placeholder="选择日期"
-            value-format="yyyy-MM-dd"
-            style="width: 100%;">
+          <el-date-picker v-model="form.birthday" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" style="width: 100%;">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
@@ -126,14 +117,14 @@
           <el-input type="textarea" v-model="form.address" placeholder="请输入地址"></el-input>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm">确 定</el-button>
-      </div>
+      </template>
     </el-dialog>
-    
+
     <!-- 会员消费记录对话框 -->
-    <el-dialog title="会员消费记录" :visible.sync="consumptionDialogVisible" width="800px">
+    <el-dialog title="会员消费记录" v-model="consumptionDialogVisible" width="800px">
       <div v-if="currentMember" class="member-info">
         <p><strong>会员：</strong>{{ currentMember.member_name }}</p>
         <p><strong>卡号：</strong>{{ currentMember.card_number }}</p>
@@ -144,221 +135,215 @@
         </p>
         <p><strong>积分：</strong>{{ currentMember.points }}</p>
       </div>
-      
-      <el-table
-        v-loading="consumptionLoading"
-        :data="consumptionList"
-        border
-        style="width: 100%; margin-top: 20px;">
+
+      <el-table v-loading="consumptionLoading" :data="consumptionList" border style="width: 100%; margin-top: 20px;">
         <el-table-column prop="order_number" label="订单号" width="180"></el-table-column>
         <el-table-column prop="order_time" label="消费时间" width="180">
-          <template slot-scope="scope">
-            {{ scope.row.order_time | formatDateTime }}
+          <template #default="{ row }">
+            {{ row.order_time | formatDateTime }}
           </template>
         </el-table-column>
         <el-table-column prop="total_amount" label="消费金额" width="120">
-          <template slot-scope="scope">
-            {{ scope.row.total_amount | formatMoney }} 元
+          <template #default="{ row }">
+            {{ row.total_amount | formatMoney }} 元
           </template>
         </el-table-column>
         <el-table-column prop="points_earned" label="获得积分" width="100" align="center"></el-table-column>
         <el-table-column prop="payment_method" label="支付方式" width="100"></el-table-column>
         <el-table-column prop="notes" label="备注" min-width="150"></el-table-column>
       </el-table>
-      
-      <div slot="footer" class="dialog-footer">
+
+      <template #footer>
         <el-button @click="consumptionDialogVisible = false">关 闭</el-button>
-      </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import { getMembers, getMember, createMember, updateMember, deleteMember, getMemberConsumption } from '@/api/member';
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getMembers, getMemberConsumption, createMember, updateMember, deleteMember } from '@/api/member'
 
-export default {
-  name: 'MemberIndex',
-  data() {
-    return {
-      loading: false,
-      memberList: [],
-      total: 0,
-      queryParams: {
-        page: 1,
-        limit: 10,
-        member_name: '',
-        card_number: '',
-        level: ''
-      },
-      
-      dialogVisible: false,
-      dialogTitle: '',
-      form: {
-        card_number: '',
-        member_name: '',
-        gender: 'M',
-        phone: '',
-        level: 1,
-        points: 0,
-        birthday: '',
-        email: '',
-        address: ''
-      },
-      
-      rules: {
-        card_number: [{ required: true, message: '请输入会员卡号', trigger: 'blur' }],
-        member_name: [{ required: true, message: '请输入会员姓名', trigger: 'blur' }],
-        phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
-        level: [{ required: true, message: '请选择会员等级', trigger: 'change' }]
-      },
-      
-      consumptionDialogVisible: false,
-      consumptionLoading: false,
-      currentMember: null,
-      consumptionList: []
-    }
-  },
-  created() {
-    this.getMemberList();
-  },
-  methods: {
-    async getMemberList() {
-      this.loading = true;
-      try {
-        const res = await getMembers(this.queryParams);
-        this.memberList = res.data.items || [];
-        this.total = res.data.total || 0;
-      } catch (error) {
-        console.error('获取会员列表失败:', error);
-        this.$message.error('获取会员列表失败');
-      } finally {
-        this.loading = false;
-      }
-    },
-    
-    getLevelName(level) {
-      switch (level) {
-        case 1: return '普通会员';
-        case 2: return '银卡会员';
-        case 3: return '金卡会员';
-        default: return '未知';
-      }
-    },
-    
-    getLevelType(level) {
-      switch (level) {
-        case 1: return '';
-        case 2: return 'success';
-        case 3: return 'warning';
-        default: return 'info';
-      }
-    },
-    
-    handleQuery() {
-      this.queryParams.page = 1;
-      this.getMemberList();
-    },
-    
-    resetQuery() {
-      this.queryParams = {
-        page: 1,
-        limit: 10,
-        member_name: '',
-        card_number: '',
-        level: ''
-      };
-      this.getMemberList();
-    },
-    
-    handleSizeChange(val) {
-      this.queryParams.limit = val;
-      this.getMemberList();
-    },
-    
-    handleCurrentChange(val) {
-      this.queryParams.page = val;
-      this.getMemberList();
-    },
-    
-    handleAdd() {
-      this.dialogTitle = '添加会员';
-      this.form = {
-        card_number: '',
-        member_name: '',
-        gender: 'M',
-        phone: '',
-        level: 1,
-        points: 0,
-        birthday: '',
-        email: '',
-        address: ''
-      };
-      this.dialogVisible = true;
-    },
-    
-    handleEdit(row) {
-      this.dialogTitle = '编辑会员';
-      this.form = JSON.parse(JSON.stringify(row));
-      this.dialogVisible = true;
-    },
-    
-    async handleDelete(row) {
-      try {
-        await this.$confirm('确认删除该会员吗？', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        });
-        
-        await deleteMember(row.member_id);
-        this.$message.success('删除成功');
-        this.getMemberList();
-      } catch (error) {
-        console.error('删除会员失败:', error);
-      }
-    },
-    
-    async handleConsumption(row) {
-      this.currentMember = row;
-      this.consumptionDialogVisible = true;
-      this.consumptionLoading = true;
-      this.consumptionList = [];
-      
-      try {
-        const res = await getMemberConsumption(row.member_id);
-        this.consumptionList = res.data || [];
-      } catch (error) {
-        console.error('获取会员消费记录失败:', error);
-        this.$message.error('获取会员消费记录失败');
-      } finally {
-        this.consumptionLoading = false;
-      }
-    },
-    
-    submitForm() {
-      this.$refs.form.validate(async valid => {
-        if (!valid) return;
-        
-        try {
-          if (this.form.member_id) {
-            // 更新
-            await updateMember(this.form.member_id, this.form);
-            this.$message.success('更新成功');
-          } else {
-            // 新增
-            await createMember(this.form);
-            this.$message.success('添加成功');
-          }
-          
-          this.dialogVisible = false;
-          this.getMemberList();
-        } catch (error) {
-          console.error('保存会员失败:', error);
-          this.$message.error('保存会员失败');
-        }
-      });
-    }
+const loading = ref(false)
+const memberList = ref([])
+const total = ref(0)
+
+const queryParams = reactive({
+  page: 1,
+  limit: 10,
+  member_name: '',
+  card_number: '',
+  level: ''
+})
+
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const form = reactive({
+  card_number: '',
+  member_name: '',
+  gender: 'M',
+  phone: '',
+  level: 1,
+  points: 0,
+  birthday: '',
+  email: '',
+  address: ''
+})
+
+const rules = {
+  card_number: [{ required: true, message: '请输入会员卡号', trigger: 'blur' }],
+  member_name: [{ required: true, message: '请输入会员姓名', trigger: 'blur' }],
+  phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
+  level: [{ required: true, message: '请选择会员等级', trigger: 'change' }]
+}
+
+const consumptionDialogVisible = ref(false)
+const consumptionLoading = ref(false)
+const currentMember = ref(null)
+const consumptionList = ref([])
+
+// const message = useMessage()
+// const confirm = useConfirm()
+
+onMounted(() => {
+  getMemberList()
+})
+
+async function getMemberList() {
+  loading.value = true
+  try {
+    const res = await getMembers(queryParams)
+    memberList.value = res.data.items || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取会员列表失败:', error)
+    ElMessage.error('获取会员列表失败')
+  } finally {
+    loading.value = false
   }
+}
+
+function getLevelName(level) {
+  switch (level) {
+    case 1: return '普通会员'
+    case 2: return '银卡会员'
+    case 3: return '金卡会员'
+    default: return '未知'
+  }
+}
+
+function getLevelType(level) {
+  switch (level) {
+    case 1: return ''
+    case 2: return 'success'
+    case 3: return 'warning'
+    default: return 'info'
+  }
+}
+
+function handleQuery() {
+  queryParams.page = 1
+  getMemberList()
+}
+
+function resetQuery() {
+  Object.assign(queryParams, {
+    page: 1,
+    limit: 10,
+    member_name: '',
+    card_number: '',
+    level: ''
+  })
+  getMemberList()
+}
+
+function handleSizeChange(val) {
+  queryParams.limit = val
+  getMemberList()
+}
+
+function handleCurrentChange(val) {
+  queryParams.page = val
+  getMemberList()
+}
+
+function handleAdd() {
+  dialogTitle.value = '添加会员'
+  Object.assign(form, {
+    card_number: '',
+    member_name: '',
+    gender: 'M',
+    phone: '',
+    level: 1,
+    points: 0,
+    birthday: '',
+    email: '',
+    address: ''
+  })
+  dialogVisible.value = true
+}
+
+function handleEdit(row) {
+  dialogTitle.value = '编辑会员'
+  Object.assign(form, row)
+  dialogVisible.value = true
+}
+
+async function handleDelete(row) {
+  try {
+    await ElMessageBox.confirm('确认删除该会员吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await deleteMember(row.member_id)
+    ElMessage.success('删除成功')
+    getMemberList()
+  } catch (error) {
+    console.error('删除会员失败:', error)
+  }
+}
+
+async function handleConsumption(row) {
+  currentMember.value = row
+  consumptionDialogVisible.value = true
+  consumptionLoading.value = true
+  consumptionList.value = []
+
+  try {
+    const res = await getMemberConsumption(row.member_id)
+    consumptionList.value = res.data || []
+  } catch (error) {
+    console.error('获取会员消费记录失败:', error)
+    ElMessage.error('获取会员消费记录失败')
+  } finally {
+    consumptionLoading.value = false
+  }
+}
+
+function submitForm() {
+  const formRef = ref(null)
+  formRef.value.validate(async (valid) => {
+    if (!valid) return
+
+    try {
+      if (form.member_id) {
+        await updateMember(form.member_id, form)
+        ElMessage.success('更新成功')
+      } else {
+        await createMember(form)
+        ElMessage.success('添加成功')
+      }
+
+      dialogVisible.value = false
+      getMemberList()
+    } catch (error) {
+      console.error('保存会员失败:', error)
+      ElMessage.error('保存会员失败')
+    }
+  })
 }
 </script>
 

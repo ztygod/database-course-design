@@ -43,29 +43,29 @@
         <el-table-column prop="dish_name" label="菜品名称" min-width="120"></el-table-column>
         <el-table-column prop="category_name" label="菜品类别" min-width="100"></el-table-column>
         <el-table-column prop="price" label="价格" min-width="80">
-          <template slot-scope="scope">
-            {{ scope.row.price.toFixed(2) }} 元
+          <template #default="{ row }">
+            {{ row.price.toFixed(2) }} 元
           </template>
         </el-table-column>
         <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip></el-table-column>
         <el-table-column prop="status" label="状态" width="80">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
-              {{ scope.row.status === 1 ? '上架' : '下架' }}
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'">
+              {{ row.status === 1 ? '上架' : '下架' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" align="center">
-          <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="success" @click="handleIngredient(scope.row)">配料</el-button>
+          <template #default="{ row }">
+            <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button size="mini" type="success" @click="handleIngredient(row)">配料</el-button>
             <el-button 
               size="mini" 
-              :type="scope.row.status === 1 ? 'warning' : 'success'"
-              @click="handleStatusChange(scope.row)">
-              {{ scope.row.status === 1 ? '下架' : '上架' }}
+              :type="row.status === 1 ? 'warning' : 'success'"
+              @click="handleStatusChange(row)">
+              {{ row.status === 1 ? '下架' : '上架' }}
             </el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -80,7 +80,7 @@
     </el-card>
     
     <!-- 添加/编辑菜品对话框 -->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px" append-to-body>
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="菜品名称" prop="dish_name">
           <el-input v-model="form.dish_name" placeholder="请输入菜品名称"></el-input>
@@ -108,14 +108,14 @@
           </el-radio-group>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm">确 定</el-button>
-      </div>
+      </template>
     </el-dialog>
     
     <!-- 配料管理对话框 -->
-    <el-dialog title="配料管理" :visible.sync="ingredientDialogVisible" width="700px" append-to-body>
+    <el-dialog title="配料管理" v-model:visible="ingredientDialogVisible" width="700px" append-to-body>
       <div v-if="currentDish.dish_id">
         <p class="ingredient-dish-info">
           菜品：{{ currentDish.dish_name }} | 
@@ -128,13 +128,13 @@
         <el-table :data="dishIngredients" border style="width: 100%">
           <el-table-column prop="ingredient_name" label="原材料名称" min-width="120"></el-table-column>
           <el-table-column prop="quantity" label="用量" width="100">
-            <template slot-scope="scope">
-              {{ scope.row.quantity }} {{ scope.row.unit || '单位' }}
+            <template #default="{ row }">
+              {{ row.quantity }} {{ row.unit || '单位' }}
             </template>
           </el-table-column>
           <el-table-column label="操作" width="120" align="center">
-            <template slot-scope="scope">
-              <el-button size="mini" type="danger" @click="handleRemoveIngredient(scope.row)">移除</el-button>
+            <template #default="{ row }">
+              <el-button size="mini" type="danger" @click="handleRemoveIngredient(row)">移除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -167,259 +167,273 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'DishList',
-  components: {
-    Pagination: () => import('@/components/common/Pagination.vue')
-  },
-  data() {
-    return {
-      loading: false,
-      dishList: [],
-      total: 0,
-      queryParams: {
-        page: 1,
-        limit: 10,
-        dish_name: '',
-        category_id: undefined,
-        status: undefined
-      },
-      dialogVisible: false,
-      dialogTitle: '',
-      form: {
-        dish_name: '',
-        category_id: undefined,
-        price: 0,
-        description: '',
-        status: 1
-      },
-      rules: {
-        dish_name: [{ required: true, message: '请输入菜品名称', trigger: 'blur' }],
-        category_id: [{ required: true, message: '请选择菜品类别', trigger: 'change' }],
-        price: [{ required: true, message: '请输入价格', trigger: 'blur' }]
-      },
-      categoryOptions: [],
-      ingredientDialogVisible: false,
-      currentDish: {},
-      dishIngredients: [],
-      ingredientOptions: [],
-      ingredientForm: {
-        ingredient_id: undefined,
-        quantity: 1,
-        unit: ''
-      }
-    };
-  },
-  created() {
-    this.getDishList();
-    this.getCategoryOptions();
-    this.getIngredientOptions();
-  },
-  methods: {
-    async getDishList() {
-      this.loading = true;
-      try {
-        const res = await getDishes(this.queryParams);
-        this.dishList = res.data.items || [];
-        this.total = res.data.total || 0;
-      } catch (error) {
-        console.error('获取菜品列表失败:', error);
-        this.$message.error('获取菜品列表失败');
-      } finally {
-        this.loading = false;
-      }
-    },
-    async getCategoryOptions() {
-      try {
-        const res = await getAllCategories();
-        this.categoryOptions = res.data || [];
-      } catch (error) {
-        console.error('获取菜品类别失败:', error);
-        this.$message.error('获取菜品类别失败');
-      }
-    },
-    async getIngredientOptions() {
-      try {
-        const res = await getAllIngredients();
-        this.ingredientOptions = res.data || [];
-      } catch (error) {
-        console.error('获取原材料列表失败:', error);
-        this.$message.error('获取原材料列表失败');
-      }
-    },
-    handleQuery() {
-      this.queryParams.page = 1;
-      this.getDishList();
-    },
-    resetQuery() {
-      this.$refs.queryForm.resetFields();
-      this.handleQuery();
-    },
-    handleAdd() {
-      this.dialogTitle = '添加菜品';
-      this.form = {
-        dish_name: '',
-        category_id: undefined,
-        price: 0,
-        description: '',
-        status: 1
-      };
-      this.dialogVisible = true;
-    },
-    handleEdit(row) {
-      this.dialogTitle = '编辑菜品';
-      this.form = { ...row };
-      this.dialogVisible = true;
-    },
-    async handleDelete(row) {
-      try {
-        await this.$confirm('确认删除该菜品吗？', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        });
-        
-        await deleteDish(row.dish_id);
-        this.$message.success('删除成功');
-        this.getDishList();
-      } catch (error) {
-        console.error('删除菜品失败:', error);
-      }
-    },
-    async handleStatusChange(row) {
-      try {
-        const newStatus = row.status === 1 ? 0 : 1;
-        await updateDishStatus(row.dish_id, newStatus);
-        this.$message.success(`${newStatus === 1 ? '上架' : '下架'}成功`);
-        this.getDishList();
-      } catch (error) {
-        console.error('更新菜品状态失败:', error);
-        this.$message.error('更新菜品状态失败');
-      }
-    },
-    async submitForm() {
-      this.$refs.form.validate(async (valid) => {
-        if (!valid) return;
-        
-        try {
-          if (this.form.dish_id) {
-            // 更新
-            await updateDish(this.form.dish_id, this.form);
-            this.$message.success('更新成功');
-          } else {
-            // 新增
-            await createDish(this.form);
-            this.$message.success('添加成功');
-          }
-          
-          this.dialogVisible = false;
-          this.getDishList();
-        } catch (error) {
-          console.error('保存菜品失败:', error);
-          this.$message.error('保存菜品失败');
-        }
-      });
-    },
-    async handleIngredient(row) {
-      this.currentDish = { ...row };
-      this.ingredientDialogVisible = true;
-      this.getDishIngredientList(row.dish_id);
-    },
-    async getDishIngredientList(dishId) {
-      try {
-        const res = await getDishIngredients(dishId);
-        this.dishIngredients = res.data || [];
-      } catch (error) {
-        console.error('获取菜品配料失败:', error);
-        this.$message.error('获取菜品配料失败');
-      }
-    },
-    async handleAddIngredient() {
-      if (!this.ingredientForm.ingredient_id || !this.ingredientForm.quantity) {
-        this.$message.warning('请选择原材料并输入用量');
-        return;
-      }
-      
-      // 检查是否已添加该原材料
-      const exists = this.dishIngredients.some(item => item.ingredient_id === this.ingredientForm.ingredient_id);
-      if (exists) {
-        this.$message.warning('该原材料已添加，请勿重复添加');
-        return;
-      }
-      
-      try {
-        // 构建新的配料列表
-        const newIngredients = [...this.dishIngredients];
-        
-        // 添加新配料
-        const selectedIngredient = this.ingredientOptions.find(item => item.ingredient_id === this.ingredientForm.ingredient_id);
-        if (selectedIngredient) {
-          newIngredients.push({
-            relation_id: 0, // 新添加的，暂无ID
-            dish_id: this.currentDish.dish_id,
-            ingredient_id: this.ingredientForm.ingredient_id,
-            ingredient_name: selectedIngredient.ingredient_name,
-            quantity: this.ingredientForm.quantity,
-            unit: this.ingredientForm.unit,
-            created_at: '',
-            updated_at: ''
-          });
-        }
-        
-        // 更新配料列表
-        await updateDishIngredients(this.currentDish.dish_id, {
-          ingredients: newIngredients.map(item => ({
-            ingredient_id: item.ingredient_id,
-            quantity: item.quantity,
-            unit: item.unit
-          }))
-        });
-        
-        this.$message.success('添加配料成功');
-        this.getDishIngredientList(this.currentDish.dish_id);
-        
-        // 重置表单
-        this.ingredientForm = {
-          ingredient_id: undefined,
-          quantity: 1,
-          unit: ''
-        };
-      } catch (error) {
-        console.error('添加配料失败:', error);
-        this.$message.error('添加配料失败');
-      }
-    },
-    async handleRemoveIngredient(row) {
-      try {
-        await this.$confirm('确认移除该配料吗？', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        });
-        
-        // 构建新的配料列表（排除要删除的）
-        const newIngredients = this.dishIngredients
-          .filter(item => item.ingredient_id !== row.ingredient_id)
-          .map(item => ({
-            ingredient_id: item.ingredient_id,
-            quantity: item.quantity,
-            unit: item.unit
-          }));
-        
-        // 更新配料列表
-        await updateDishIngredients(this.currentDish.dish_id, {
-          ingredients: newIngredients
-        });
-        
-        this.$message.success('移除配料成功');
-        this.getDishIngredientList(this.currentDish.dish_id);
-      } catch (error) {
-        console.error('移除配料失败:', error);
-      }
-    }
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import Pagination from '@/components/common/Pagination.vue'
+import { getDishes, deleteDish, updateDishStatus, updateDish, createDish, getDishIngredients, updateDishIngredients } from '@/api/dish'
+import { getAllCategories } from '@/api/category';
+import { getAllIngredients } from '@/api/ingredient';
+
+const loading = ref(false)
+const dishList = ref([])
+const total = ref(0)
+const queryParams = reactive({
+  page: 1,
+  limit: 10,
+  dish_name: '',
+  category_id: undefined,
+  status: undefined
+})
+
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const form = reactive({
+  dish_name: '',
+  category_id: undefined,
+  price: 0,
+  description: '',
+  status: 1
+})
+
+const rules = {
+  dish_name: [{ required: true, message: '请输入菜品名称', trigger: 'blur' }],
+  category_id: [{ required: true, message: '请选择菜品类别', trigger: 'change' }],
+  price: [{ required: true, message: '请输入价格', trigger: 'blur' }]
+}
+
+const categoryOptions = ref([])
+const ingredientDialogVisible = ref(false)
+const currentDish = reactive({})
+const dishIngredients = ref([])
+const ingredientOptions = ref([])
+const ingredientForm = reactive({
+  ingredient_id: undefined,
+  quantity: 1,
+  unit: ''
+})
+
+// const message = useMessage()
+
+onMounted(() => {
+  getDishList()
+  getCategoryOptions()
+  getIngredientOptions()
+})
+
+async function getDishList() {
+  loading.value = true
+  try {
+    const res = await getDishes(queryParams)
+    dishList.value = res.data.items || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取菜品列表失败:', error)
+    ElMessage.error('获取菜品列表失败')
+  } finally {
+    loading.value = false
   }
-};
+}
+
+async function getCategoryOptions() {
+  try {
+    const res = await getAllCategories()
+    categoryOptions.value = res.data || []
+  } catch (error) {
+    console.error('获取菜品类别失败:', error)
+    ElMessage.error('获取菜品类别失败')
+  }
+}
+
+async function getIngredientOptions() {
+  try {
+    const res = await getAllIngredients()
+    ingredientOptions.value = res.data || []
+  } catch (error) {
+    console.error('获取原材料列表失败:', error)
+    ElMessage.error('获取原材料列表失败')
+  }
+}
+
+function handleQuery() {
+  queryParams.page = 1
+  getDishList()
+}
+
+function resetQuery() {
+  queryParams.dish_name = ''
+  queryParams.category_id = undefined
+  queryParams.status = undefined
+  handleQuery()
+}
+
+function handleAdd() {
+  dialogTitle.value = '添加菜品'
+  form.dish_name = ''
+  form.category_id = undefined
+  form.price = 0
+  form.description = ''
+  form.status = 1
+  dialogVisible.value = true
+}
+
+function handleEdit(row) {
+  dialogTitle.value = '编辑菜品'
+  Object.assign(form, row)
+  dialogVisible.value = true
+}
+
+async function handleDelete(row) {
+  try {
+    await ElMessageBox.confirm('确认删除该菜品吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    await deleteDish(row.dish_id)
+    ElMessageBox.success('删除成功')
+    getDishList()
+  } catch (error) {
+    console.error('删除菜品失败:', error)
+  }
+}
+
+async function handleStatusChange(row) {
+  try {
+    const newStatus = row.status === 1 ? 0 : 1
+    await updateDishStatus(row.dish_id, newStatus)
+    ElMessageBox.success(`${newStatus === 1 ? '上架' : '下架'}成功`)
+    getDishList()
+  } catch (error) {
+    console.error('更新菜品状态失败:', error)
+    ElMessage.error('更新菜品状态失败')
+  }
+}
+
+async function submitForm() {
+  const formRef = ref(null)
+  formRef.value.validate(async (valid) => {
+    if (!valid) return
+    
+    try {
+      if (form.dish_id) {
+        // 更新
+        await updateDish(form.dish_id, form)
+        ElMessageBox.success('更新成功')
+      } else {
+        // 新增
+        await createDish(form)
+        ElMessageBox.success('添加成功')
+      }
+      
+      dialogVisible.value = false
+      getDishList()
+    } catch (error) {
+      console.error('保存菜品失败:', error)
+      ElMessage.error('保存菜品失败')
+    }
+  })
+}
+
+async function handleIngredient(row) {
+  Object.assign(currentDish, row)
+  ingredientDialogVisible.value = true
+  getDishIngredientList(row.dish_id)
+}
+
+async function getDishIngredientList(dishId) {
+  try {
+    const res = await getDishIngredients(dishId)
+    dishIngredients.value = res.data || []
+  } catch (error) {
+    console.error('获取菜品配料失败:', error)
+    ElMessage.error('获取菜品配料失败')
+  }
+}
+
+async function handleAddIngredient() {
+  if (!ingredientForm.ingredient_id || !ingredientForm.quantity) {
+    ElMessage.warning('请选择原材料并输入用量')
+    return
+  }
+
+  // 检查是否已添加该原材料
+  const exists = dishIngredients.value.some(item => item.ingredient_id === ingredientForm.ingredient_id)
+  if (exists) {
+    ElMessage.warning('该原材料已添加，请勿重复添加')
+    return
+  }
+
+  try {
+    // 构建新的配料列表
+    const newIngredients = [...dishIngredients.value]
+
+    // 添加新配料
+    const selectedIngredient = ingredientOptions.value.find(item => item.ingredient_id === ingredientForm.ingredient_id)
+    if (selectedIngredient) {
+      newIngredients.push({
+        relation_id: 0, // 新添加的，暂无ID
+        dish_id: currentDish.dish_id,
+        ingredient_id: ingredientForm.ingredient_id,
+        ingredient_name: selectedIngredient.ingredient_name,
+        quantity: ingredientForm.quantity,
+        unit: ingredientForm.unit,
+        created_at: '',
+        updated_at: ''
+      })
+    }
+
+    // 更新配料列表
+    await updateDishIngredients(currentDish.dish_id, {
+      ingredients: newIngredients.map(item => ({
+        ingredient_id: item.ingredient_id,
+        quantity: item.quantity,
+        unit: item.unit
+      }))
+    })
+
+    ElMessageBox.success('添加配料成功')
+    getDishIngredientList(currentDish.dish_id)
+
+    // 重置表单
+    ingredientForm.ingredient_id = undefined
+    ingredientForm.quantity = 1
+    ingredientForm.unit = ''
+  } catch (error) {
+    console.error('添加配料失败:', error)
+    ElMessage.error('添加配料失败')
+  }
+}
+
+async function handleRemoveIngredient(row) {
+  try {
+    await ElMessage.confirm('确认移除该配料吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    // 构建新的配料列表（排除要删除的）
+    const newIngredients = dishIngredients.value
+      .filter(item => item.ingredient_id !== row.ingredient_id)
+      .map(item => ({
+        ingredient_id: item.ingredient_id,
+        quantity: item.quantity,
+        unit: item.unit
+      }))
+
+    // 更新配料列表
+    await updateDishIngredients(currentDish.dish_id, {
+      ingredients: newIngredients
+    })
+
+    ElMessageBox.success('移除配料成功')
+    getDishIngredientList(currentDish.dish_id)
+  } catch (error) {
+    console.error('移除配料失败:', error)
+  }
+}
 </script>
 
 <style lang="scss" scoped>

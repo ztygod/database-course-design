@@ -1,5 +1,4 @@
-import request from '../utils/request';
-
+import request from "@/utils/request";
 // 获取所有菜品
 export function getAllDishes() {
   return request({

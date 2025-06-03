@@ -44,19 +44,19 @@
         <el-table-column type="index" width="50" align="center"></el-table-column>
         <el-table-column prop="order_number" label="订单号" width="180"></el-table-column>
         <el-table-column prop="order_time" label="下单时间" width="180">
-          <template slot-scope="scope">
-            {{ scope.row.order_time | formatDateTime }}
+          <template #default="{ row }">
+            {{ row.order_time | formatDateTime }}
           </template>
         </el-table-column>
         <el-table-column prop="total_amount" label="总金额" width="120">
-          <template slot-scope="scope">
-            {{ scope.row.total_amount | formatMoney }} 元
+          <template #default="{ row }">
+            {{ row.total_amount | formatMoney }} 元
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
-          <template slot-scope="scope">
-            <el-tag :type="getStatusType(scope.row.status)">
-              {{ getStatusText(scope.row.status) }}
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)">
+              {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -64,27 +64,27 @@
         <el-table-column prop="employee_name" label="服务员" width="120"></el-table-column>
         <el-table-column prop="notes" label="备注" min-width="150"></el-table-column>
         <el-table-column label="操作" width="250" align="center">
-          <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="handleView(scope.row)">查看</el-button>
+          <template #default="{ row }">
+            <el-button size="mini" type="primary" @click="handleView(row)">查看</el-button>
             <el-button 
               size="mini" 
               type="success" 
-              v-if="scope.row.status === 0"
-              @click="handleSettle(scope.row)">
+              v-if="row.status === 0"
+              @click="handleSettle(row)">
               结算
             </el-button>
             <el-button 
               size="mini" 
               type="warning" 
-              v-if="scope.row.status === 0"
-              @click="handleEdit(scope.row)">
+              v-if="row.status === 0"
+              @click="handleEdit(row)">
               编辑
             </el-button>
             <el-button 
               size="mini" 
               type="danger" 
-              v-if="scope.row.status === 0"
-              @click="handleCancel(scope.row)">
+              v-if="row.status === 0"
+              @click="handleCancel(row)">
               取消
             </el-button>
           </template>
@@ -105,7 +105,7 @@
     </el-card>
     
     <!-- 新建/编辑订单对话框 -->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="800px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="800px">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row :gutter="20">
           <el-col :span="12">
@@ -145,14 +145,14 @@
         <el-table :data="form.order_items" border style="width: 100%; margin-bottom: 20px;">
           <el-table-column prop="dish_name" label="菜品名称" min-width="150"></el-table-column>
           <el-table-column prop="price" label="单价" width="100">
-            <template slot-scope="scope">
-              {{ scope.row.price | formatMoney }} 元
+            <template #default="{ row }">
+              {{ row.price | formatMoney }} 元
             </template>
           </el-table-column>
           <el-table-column prop="quantity" label="数量" width="100">
-            <template slot-scope="scope">
+            <template #default="{ row }">
               <el-input-number 
-                v-model="scope.row.quantity" 
+                v-model="row.quantity" 
                 :min="1" 
                 :max="99"
                 size="small"
@@ -161,18 +161,18 @@
             </template>
           </el-table-column>
           <el-table-column prop="subtotal" label="小计" width="120">
-            <template slot-scope="scope">
-              {{ (scope.row.price * scope.row.quantity) | formatMoney }} 元
+            <template #default="{ row }">
+              {{ (row.price * row.quantity) | formatMoney }} 元
             </template>
           </el-table-column>
           <el-table-column label="操作" width="80" align="center">
-            <template slot-scope="scope">
+            <template #default="{ $index }">
               <el-button 
                 type="danger" 
                 icon="el-icon-delete" 
                 size="mini" 
                 circle
-                @click="removeOrderItem(scope.$index)">
+                @click="removeOrderItem($index)">
               </el-button>
             </template>
           </el-table-column>
@@ -182,14 +182,14 @@
           <span>总金额：<strong>{{ form.total_amount | formatMoney }}</strong> 元</span>
         </div>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm">保 存</el-button>
-      </div>
+      </template>
     </el-dialog>
     
     <!-- 添加菜品对话框 -->
-    <el-dialog title="添加菜品" :visible.sync="itemDialogVisible" width="600px">
+    <el-dialog title="添加菜品" v-model="itemDialogVisible" width="600px">
       <el-form :inline="true" :model="itemForm">
         <el-form-item label="菜品类别">
           <el-select v-model="itemForm.category_id" placeholder="请选择类别" @change="handleCategoryChange" clearable>
@@ -218,24 +218,24 @@
         <el-table-column prop="dish_name" label="菜品名称" min-width="150"></el-table-column>
         <el-table-column prop="category_name" label="类别" width="120"></el-table-column>
         <el-table-column prop="price" label="价格" width="100">
-          <template slot-scope="scope">
-            {{ scope.row.price | formatMoney }} 元
+          <template #default="{ row }">
+            {{ row.price | formatMoney }} 元
           </template>
         </el-table-column>
         <el-table-column label="操作" width="100" align="center">
-          <template slot-scope="scope">
-            <el-button type="primary" size="mini" @click="addDishToOrder(scope.row)">添加</el-button>
+          <template #default="{ row }">
+            <el-button type="primary" size="mini" @click="addDishToOrder(row)">添加</el-button>
           </template>
         </el-table-column>
       </el-table>
       
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="itemDialogVisible = false">关 闭</el-button>
-      </div>
+      </template>
     </el-dialog>
     
     <!-- 查看订单详情对话框 -->
-    <el-dialog title="订单详情" :visible.sync="viewDialogVisible" width="700px">
+    <el-dialog title="订单详情" v-model="viewDialogVisible" width="700px">
       <div v-if="currentOrder" class="order-detail">
         <div class="order-info">
           <p><strong>订单号：</strong>{{ currentOrder.order_number }}</p>
@@ -256,14 +256,14 @@
         <el-table :data="orderDetails" border style="width: 100%">
           <el-table-column prop="dish_name" label="菜品名称" min-width="150"></el-table-column>
           <el-table-column prop="price" label="单价" width="100">
-            <template slot-scope="scope">
-              {{ scope.row.price | formatMoney }} 元
+            <template #default="{ row }">
+              {{ row.price | formatMoney }} 元
             </template>
           </el-table-column>
           <el-table-column prop="quantity" label="数量" width="80" align="center"></el-table-column>
           <el-table-column prop="subtotal" label="小计" width="120">
-            <template slot-scope="scope">
-              {{ (scope.row.price * scope.row.quantity) | formatMoney }} 元
+            <template #default="{ row }">
+              {{ (row.price * row.quantity) | formatMoney }} 元
             </template>
           </el-table-column>
         </el-table>
@@ -273,13 +273,13 @@
           <p v-if="currentOrder.status === 1"><strong>结算时间：</strong>{{ currentOrder.settlement_time | formatDateTime }}</p>
         </div>
       </div>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="viewDialogVisible = false">关 闭</el-button>
-      </div>
+      </template>
     </el-dialog>
     
     <!-- 结算订单对话框 -->
-    <el-dialog title="订单结算" :visible.sync="settleDialogVisible" width="500px">
+    <el-dialog title="订单结算" v-model="settleDialogVisible" width="500px">
       <div v-if="currentOrder" class="settle-form">
         <p><strong>订单号：</strong>{{ currentOrder.order_number }}</p>
         <p><strong>总金额：</strong>{{ currentOrder.total_amount | formatMoney }} 元</p>
@@ -307,366 +307,366 @@
           </el-form-item>
         </el-form>
       </div>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="settleDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitSettle">确认结算</el-button>
-      </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import { getOrders, getOrder, createOrder, updateOrder, deleteOrder, settleOrder, cancelOrder, addOrderDetail, deleteOrderDetail } from '@/api/order';
-import { getAllMembers } from '@/api/member';
-import { getAllEmployees } from '@/api/employee';
-import { getAllCategories } from '@/api/category';
-import { getDishes } from '@/api/dish';
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getOrders, getOrder, createOrder, updateOrder, deleteOrder, settleOrder, cancelOrder, addOrderDetail, deleteOrderDetail } from '@/api/order'
+import { getAllMembers } from '@/api/member'
+import { getAllEmployees } from '@/api/employee'
+import { getAllCategories } from '@/api/category'
+import { getDishes } from '@/api/dish'
 
-export default {
-  name: 'OrderList',
-  data() {
-    return {
-      loading: false,
-      orderList: [],
-      total: 0,
-      queryParams: {
-        page: 1,
-        limit: 10,
-        order_number: '',
-        status: '',
-        start_date: '',
-        end_date: ''
-      },
-      dateRange: [],
-      
-      memberOptions: [],
-      employeeOptions: [],
-      categoryOptions: [],
-      dishOptions: [],
-      
-      dialogVisible: false,
-      dialogTitle: '',
-      form: {
-        member_id: '',
-        employee_id: '',
-        notes: '',
-        order_items: [],
-        total_amount: 0
-      },
-      
-      rules: {
-        employee_id: [{ required: true, message: '请选择服务员', trigger: 'change' }]
-      },
-      
-      itemDialogVisible: false,
-      dishLoading: false,
-      itemForm: {
-        category_id: '',
-        keyword: ''
-      },
-      
-      viewDialogVisible: false,
-      currentOrder: null,
-      orderDetails: [],
-      
-      settleDialogVisible: false,
-      settleForm: {
-        payment_method: 'cash',
-        actual_amount: 0,
-        notes: ''
-      },
-      settleRules: {
-        payment_method: [{ required: true, message: '请选择支付方式', trigger: 'change' }],
-        actual_amount: [{ required: true, message: '请输入实收金额', trigger: 'blur' }]
-      }
-    }
-  },
-  created() {
-    this.getOrderList();
-    this.getMemberOptions();
-    this.getEmployeeOptions();
-    this.getCategoryOptions();
-  },
-  methods: {
-    async getOrderList() {
-      this.loading = true;
-      try {
-        const res = await getOrders(this.queryParams);
-        this.orderList = res.data.items || [];
-        this.total = res.data.total || 0;
-      } catch (error) {
-        console.error('获取订单列表失败:', error);
-        this.$message.error('获取订单列表失败');
-      } finally {
-        this.loading = false;
-      }
-    },
-    
-    async getMemberOptions() {
-      try {
-        const res = await getAllMembers();
-        this.memberOptions = res.data || [];
-      } catch (error) {
-        console.error('获取会员列表失败:', error);
-      }
-    },
-    
-    async getEmployeeOptions() {
-      try {
-        const res = await getAllEmployees();
-        this.employeeOptions = res.data || [];
-      } catch (error) {
-        console.error('获取员工列表失败:', error);
-      }
-    },
-    
-    async getCategoryOptions() {
-      try {
-        const res = await getAllCategories();
-        this.categoryOptions = res.data || [];
-      } catch (error) {
-        console.error('获取菜品类别失败:', error);
-      }
-    },
-    
-    handleDateChange(val) {
-      if (val) {
-        this.queryParams.start_date = val[0];
-        this.queryParams.end_date = val[1];
-      } else {
-        this.queryParams.start_date = '';
-        this.queryParams.end_date = '';
-      }
-    },
-    
-    handleQuery() {
-      this.queryParams.page = 1;
-      this.getOrderList();
-    },
-    
-    resetQuery() {
-      this.dateRange = [];
-      this.queryParams = {
-        page: 1,
-        limit: 10,
-        order_number: '',
-        status: '',
-        start_date: '',
-        end_date: ''
-      };
-      this.getOrderList();
-    },
-    
-    handleSizeChange(val) {
-      this.queryParams.limit = val;
-      this.getOrderList();
-    },
-    
-    handleCurrentChange(val) {
-      this.queryParams.page = val;
-      this.getOrderList();
-    },
-    
-    getStatusText(status) {
-      switch (status) {
-        case 0: return '未结算';
-        case 1: return '已结算';
-        case 2: return '已取消';
-        default: return '未知';
-      }
-    },
-    
-    getStatusType(status) {
-      switch (status) {
-        case 0: return 'warning';
-        case 1: return 'success';
-        case 2: return 'info';
-        default: return '';
-      }
-    },
-    
-    handleAdd() {
-      this.dialogTitle = '新建订单';
-      this.form = {
-        member_id: '',
-        employee_id: '',
-        notes: '',
-        order_items: [],
-        total_amount: 0
-      };
-      this.dialogVisible = true;
-    },
-    
-    async handleEdit(row) {
-      this.dialogTitle = '编辑订单';
-      try {
-        const res = await getOrder(row.order_id);
-        const orderData = res.data || {};
-        
-        this.form = {
-          order_id: orderData.order_id,
-          member_id: orderData.member_id || '',
-          employee_id: orderData.employee_id,
-          notes: orderData.notes || '',
-          order_items: orderData.order_items || [],
-          total_amount: orderData.total_amount || 0
-        };
-        
-        this.dialogVisible = true;
-      } catch (error) {
-        console.error('获取订单详情失败:', error);
-        this.$message.error('获取订单详情失败');
-      }
-    },
-    
-    async handleView(row) {
-      try {
-        const res = await getOrder(row.order_id);
-        this.currentOrder = res.data || {};
-        this.orderDetails = this.currentOrder.order_items || [];
-        this.viewDialogVisible = true;
-      } catch (error) {
-        console.error('获取订单详情失败:', error);
-        this.$message.error('获取订单详情失败');
-      }
-    },
-    
-    async handleSettle(row) {
-      this.currentOrder = row;
-      this.settleForm = {
-        payment_method: 'cash',
-        actual_amount: row.total_amount,
-        notes: ''
-      };
-      this.settleDialogVisible = true;
-    },
-    
-    async handleCancel(row) {
-      try {
-        await this.$confirm('确认取消该订单吗？', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        });
-        
-        await cancelOrder(row.order_id);
-        this.$message.success('订单已取消');
-        this.getOrderList();
-      } catch (error) {
-        console.error('取消订单失败:', error);
-      }
-    },
-    
-    showAddItem() {
-      this.itemForm = {
-        category_id: '',
-        keyword: ''
-      };
-      this.dishOptions = [];
-      this.itemDialogVisible = true;
-      this.searchDishes();
-    },
-    
-    handleCategoryChange() {
-      this.searchDishes();
-    },
-    
-    async searchDishes() {
-      this.dishLoading = true;
-      try {
-        const params = {
-          category_id: this.itemForm.category_id,
-          dish_name: this.itemForm.keyword,
-          status: 1, // 只查询上架的菜品
-          limit: 100
-        };
-        
-        const res = await getDishes(params);
-        this.dishOptions = res.data.items || [];
-      } catch (error) {
-        console.error('搜索菜品失败:', error);
-      } finally {
-        this.dishLoading = false;
-      }
-    },
-    
-    addDishToOrder(dish) {
-      // 检查是否已存在该菜品
-      const existingIndex = this.form.order_items.findIndex(item => item.dish_id === dish.dish_id);
-      
-      if (existingIndex >= 0) {
-        // 已存在，数量+1
-        this.form.order_items[existingIndex].quantity += 1;
-      } else {
-        // 不存在，添加新项
-        this.form.order_items.push({
-          dish_id: dish.dish_id,
-          dish_name: dish.dish_name,
-          price: dish.price,
-          quantity: 1
-        });
-      }
-      
-      this.calculateTotal();
-      this.$message.success(`已添加 ${dish.dish_name}`);
-    },
-    
-    removeOrderItem(index) {
-      this.form.order_items.splice(index, 1);
-      this.calculateTotal();
-    },
-    
-    calculateTotal() {
-      this.form.total_amount = this.form.order_items.reduce((sum, item) => {
-        return sum + (item.price * item.quantity);
-      }, 0);
-    },
-    
-    submitForm() {
-      if (this.form.order_items.length === 0) {
-        this.$message.warning('请至少添加一个菜品');
-        return;
-      }
-      
-      this.$refs.form.validate(async valid => {
-        if (!valid) return;
-        
-        try {
-          if (this.form.order_id) {
-            // 更新订单
-            await updateOrder(this.form.order_id, this.form);
-            this.$message.success('更新成功');
-          } else {
-            // 新建订单
-            await createOrder(this.form);
-            this.$message.success('创建成功');
-          }
-          
-          this.dialogVisible = false;
-          this.getOrderList();
-        } catch (error) {
-          console.error('保存订单失败:', error);
-          this.$message.error('保存订单失败');
-        }
-      });
-    },
-    
-    submitSettle() {
-      this.$refs.settleForm.validate(async valid => {
-        if (!valid) return;
-        
-        try {
-          await settleOrder(this.currentOrder.order_id, this.settleForm);
-          this.$message.success('结算成功');
-          this.settleDialogVisible = false;
-          this.getOrderList();
-        } catch (error) {
-          console.error('结算订单失败:', error);
-          this.$message.error('结算订单失败');
-        }
-      });
-    }
+const loading = ref(false)
+const orderList = ref([])
+const total = ref(0)
+const queryParams = reactive({
+  page: 1,
+  limit: 10,
+  order_number: '',
+  status: '',
+  start_date: '',
+  end_date: ''
+})
+const dateRange = ref([])
+
+const memberOptions = ref([])
+const employeeOptions = ref([])
+const categoryOptions = ref([])
+const dishOptions = ref([])
+
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const form = reactive({
+  member_id: '',
+  employee_id: '',
+  notes: '',
+  order_items: [],
+  total_amount: 0
+})
+
+const rules = {
+  employee_id: [{ required: true, message: '请选择服务员', trigger: 'change' }]
+}
+
+const itemDialogVisible = ref(false)
+const dishLoading = ref(false)
+const itemForm = reactive({
+  category_id: '',
+  keyword: ''
+})
+
+const viewDialogVisible = ref(false)
+const currentOrder = ref(null)
+const orderDetails = ref([])
+
+const settleDialogVisible = ref(false)
+const settleForm = reactive({
+  payment_method: 'cash',
+  actual_amount: 0,
+  notes: ''
+})
+const settleRules = {
+  payment_method: [{ required: true, message: '请选择支付方式', trigger: 'change' }],
+  actual_amount: [{ required: true, message: '请输入实收金额', trigger: 'blur' }]
+}
+
+// const message = useMessage()
+// const confirm = useConfirm()
+
+onMounted(() => {
+  getOrderList()
+  getMemberOptions()
+  getEmployeeOptions()
+  getCategoryOptions()
+})
+
+async function getOrderList() {
+  loading.value = true
+  try {
+    const res = await getOrders(queryParams)
+    orderList.value = res.data.items || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取订单列表失败:', error)
+    ElMessage.error('获取订单列表失败')
+  } finally {
+    loading.value = false
   }
+}
+
+async function getMemberOptions() {
+  try {
+    const res = await getAllMembers()
+    memberOptions.value = res.data || []
+  } catch (error) {
+    console.error('获取会员列表失败:', error)
+  }
+}
+
+async function getEmployeeOptions() {
+  try {
+    const res = await getAllEmployees()
+    employeeOptions.value = res.data || []
+  } catch (error) {
+    console.error('获取员工列表失败:', error)
+  }
+}
+
+async function getCategoryOptions() {
+  try {
+    const res = await getAllCategories()
+    categoryOptions.value = res.data || []
+  } catch (error) {
+    console.error('获取菜品类别失败:', error)
+  }
+}
+
+function handleDateChange(val) {
+  if (val) {
+    queryParams.start_date = val[0]
+    queryParams.end_date = val[1]
+  } else {
+    queryParams.start_date = ''
+    queryParams.end_date = ''
+  }
+}
+
+function handleQuery() {
+  queryParams.page = 1
+  getOrderList()
+}
+
+function resetQuery() {
+  dateRange.value = []
+  Object.assign(queryParams, {
+    page: 1,
+    limit: 10,
+    order_number: '',
+    status: '',
+    start_date: '',
+    end_date: ''
+  })
+  getOrderList()
+}
+
+function handleSizeChange(val) {
+  queryParams.limit = val
+  getOrderList()
+}
+
+function handleCurrentChange(val) {
+  queryParams.page = val
+  getOrderList()
+}
+
+function getStatusText(status) {
+  switch (status) {
+    case 0: return '未结算'
+    case 1: return '已结算'
+    case 2: return '已取消'
+    default: return '未知'
+  }
+}
+
+function getStatusType(status) {
+  switch (status) {
+    case 0: return 'warning'
+    case 1: return 'success'
+    case 2: return 'info'
+    default: return ''
+  }
+}
+
+function handleAdd() {
+  dialogTitle.value = '新建订单'
+  Object.assign(form, {
+    member_id: '',
+    employee_id: '',
+    notes: '',
+    order_items: [],
+    total_amount: 0
+  })
+  dialogVisible.value = true
+}
+
+async function handleEdit(row) {
+  dialogTitle.value = '编辑订单'
+  try {
+    const res = await getOrder(row.order_id)
+    const orderData = res.data || {}
+    
+    Object.assign(form, {
+      order_id: orderData.order_id,
+      member_id: orderData.member_id || '',
+      employee_id: orderData.employee_id,
+      notes: orderData.notes || '',
+      order_items: orderData.order_items || [],
+      total_amount: orderData.total_amount || 0
+    })
+    
+    dialogVisible.value = true
+  } catch (error) {
+    console.error('获取订单详情失败:', error)
+    ElMessage.error('获取订单详情失败')
+  }
+}
+
+async function handleView(row) {
+  try {
+    const res = await getOrder(row.order_id)
+    currentOrder.value = res.data || {}
+    orderDetails.value = currentOrder.value.order_items || []
+    viewDialogVisible.value = true
+  } catch (error) {
+    console.error('获取订单详情失败:', error)
+    ElMessage.error('获取订单详情失败')
+  }
+}
+
+async function handleSettle(row) {
+  currentOrder.value = row
+  Object.assign(settleForm, {
+    payment_method: 'cash',
+    actual_amount: row.total_amount,
+    notes: ''
+  })
+  settleDialogVisible.value = true
+}
+
+async function handleCancel(row) {
+  try {
+    await ElMessageBox.confirm('确认取消该订单吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    await cancelOrder(row.order_id)
+    ElMessage.success('订单已取消')
+    getOrderList()
+  } catch (error) {
+    console.error('取消订单失败:', error)
+  }
+}
+
+function showAddItem() {
+  Object.assign(itemForm, {
+    category_id: '',
+    keyword: ''
+  })
+  dishOptions.value = []
+  itemDialogVisible.value = true
+  searchDishes()
+}
+
+function handleCategoryChange() {
+  searchDishes()
+}
+
+async function searchDishes() {
+  dishLoading.value = true
+  try {
+    const params = {
+      category_id: itemForm.category_id,
+      dish_name: itemForm.keyword,
+      status: 1, // 只查询上架的菜品
+      limit: 100
+    }
+    
+    const res = await getDishes(params)
+    dishOptions.value = res.data.items || []
+  } catch (error) {
+    console.error('搜索菜品失败:', error)
+  } finally {
+    dishLoading.value = false
+  }
+}
+
+function addDishToOrder(dish) {
+  // 检查是否已存在该菜品
+  const existingIndex = form.order_items.findIndex(item => item.dish_id === dish.dish_id)
+  
+  if (existingIndex >= 0) {
+    // 已存在，数量+1
+    form.order_items[existingIndex].quantity += 1
+  } else {
+    // 不存在，添加新项
+    form.order_items.push({
+      dish_id: dish.dish_id,
+      dish_name: dish.dish_name,
+      price: dish.price,
+      quantity: 1
+    })
+  }
+  
+  calculateTotal()
+  ElMessage.success(`已添加 ${dish.dish_name}`)
+}
+
+function removeOrderItem(index) {
+  form.order_items.splice(index, 1)
+  calculateTotal()
+}
+
+function calculateTotal() {
+  form.total_amount = form.order_items.reduce((sum, item) => {
+    return sum + (item.price * item.quantity)
+  }, 0)
+}
+
+function submitForm() {
+  if (form.order_items.length === 0) {
+    ElMessage.warning('请至少添加一个菜品')
+    return
+  }
+  
+  const formRef = ref(null)
+  formRef.value.validate(async (valid) => {
+    if (!valid) return
+    
+    try {
+      if (form.order_id) {
+        // 更新订单
+        await updateOrder(form.order_id, form)
+        ElMessage.success('更新成功')
+      } else {
+        // 新建订单
+        await createOrder(form)
+        ElMessage.success('创建成功')
+      }
+      
+      dialogVisible.value = false
+      getOrderList()
+    } catch (error) {
+      console.error('保存订单失败:', error)
+      ElMessage.error('保存订单失败')
+    }
+  })
+}
+
+function submitSettle() {
+  const settleFormRef = ref(null)
+  settleFormRef.value.validate(async (valid) => {
+    if (!valid) return
+    
+    try {
+      await settleOrder(currentOrder.value.order_id, settleForm)
+      ElMessage.success('结算成功')
+      settleDialogVisible.value = false
+      getOrderList()
+    } catch (error) {
+      console.error('结算订单失败:', error)
+      ElMessage.error('结算订单失败')
+    }
+  })
 }
 </script>
 
