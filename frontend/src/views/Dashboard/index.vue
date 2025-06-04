@@ -21,23 +21,23 @@
     <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="12">
         <el-card shadow="hover">
-          <div slot="header">
+          <template #header>
             <span>销售趋势</span>
-          </div>
+          </template>
           <div id="salesChart" style="height: 300px;"></div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="hover">
-          <div slot="header">
+          <template #header>
             <span>热销菜品</span>
-          </div>
+          </template>
           <el-table :data="hotDishes" style="width: 100%" height="300">
             <el-table-column prop="dish_name" label="菜品名称"></el-table-column>
             <el-table-column prop="total_quantity" label="销售数量"></el-table-column>
             <el-table-column prop="total_amount" label="销售金额">
-              <template slot-scope="scope">
-                {{ scope.row.total_amount | formatMoney }} 元
+              <template #default="scope">
+                {{ formatMoney(scope.row.total_amount) }} 元
               </template>
             </el-table-column>
           </el-table>
@@ -48,24 +48,24 @@
     <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="24">
         <el-card shadow="hover">
-          <div slot="header">
+          <template #header>
             <span>库存预警</span>
-          </div>
+          </template>
           <el-table :data="warningIngredients" style="width: 100%" height="250">
             <el-table-column prop="ingredient_name" label="原材料名称"></el-table-column>
             <el-table-column prop="supplier_name" label="供应商"></el-table-column>
             <el-table-column prop="stock_quantity" label="当前库存">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ scope.row.stock_quantity }} {{ scope.row.unit || '单位' }}
               </template>
             </el-table-column>
             <el-table-column prop="cost_price" label="成本价">
-              <template slot-scope="scope">
-                {{ scope.row.cost_price | formatMoney }} 元
+              <template #default="scope">
+                {{ formatMoney(scope.row.cost_price) }} 元
               </template>
             </el-table-column>
             <el-table-column label="操作" width="150">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <el-button size="mini" type="primary" @click="handleInventoryIn(scope.row)">入库</el-button>
               </template>
             </el-table-column>
@@ -77,74 +77,83 @@
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { getDashboardData } from '../../api/statistics';
 import { getWarningIngredients } from '../../api/ingredient';
 
 export default {
   name: 'Dashboard',
-  data() {
-    return {
-      dashboardData: {},
-      hotDishes: [],
-      warningIngredients: [],
-      loading: false
-    }
-  },
-  computed: {
-    statCards() {
-      return [
-        {
-          title: '今日订单',
-          value: this.dashboardData.today_orders || 0,
-          icon: 'el-icon-s-order',
-          color: '#409EFF'
-        },
-        {
-          title: '今日销售额',
-          value: `${(this.dashboardData.today_sales || 0).toFixed(2)} 元`,
-          icon: 'el-icon-money',
-          color: '#67C23A'
-        },
-        {
-          title: '会员总数',
-          value: this.dashboardData.member_count || 0,
-          icon: 'el-icon-user',
-          color: '#E6A23C'
-        },
-        {
-          title: '库存预警',
-          value: this.dashboardData.warning_count || 0,
-          icon: 'el-icon-warning',
-          color: '#F56C6C'
-        }
-      ]
-    }
-  },
-  mounted() {
-    this.fetchData();
-  },
-  methods: {
-    async fetchData() {
-      this.loading = true;
+  setup() {
+    const router = useRouter();
+    const dashboardData = ref({});
+    const hotDishes = ref([]);
+    const warningIngredients = ref([]);
+    const loading = ref(false);
+
+    const statCards = computed(() => [
+      {
+        title: '今日订单',
+        value: dashboardData.value.today_orders || 0,
+        icon: 'el-icon-s-order',
+        color: '#409EFF'
+      },
+      {
+        title: '今日销售额',
+        value: `${(dashboardData.value.today_sales || 0).toFixed(2)} 元`,
+        icon: 'el-icon-money',
+        color: '#67C23A'
+      },
+      {
+        title: '会员总数',
+        value: dashboardData.value.member_count || 0,
+        icon: 'el-icon-user',
+        color: '#E6A23C'
+      },
+      {
+        title: '库存预警',
+        value: dashboardData.value.warning_count || 0,
+        icon: 'el-icon-warning',
+        color: '#F56C6C'
+      }
+    ]);
+
+    const fetchData = async () => {
+      loading.value = true;
       try {
-        // 获取仪表盘数据
         const dashboardRes = await getDashboardData();
-        this.dashboardData = dashboardRes.data || {};
-        this.hotDishes = this.dashboardData.hot_dishes || [];
-        
-        // 获取库存预警数据
+        dashboardData.value = dashboardRes.data || {};
+        hotDishes.value = dashboardData.value.hot_dishes || [];
+
         const warningRes = await getWarningIngredients();
-        this.warningIngredients = warningRes.data || [];
+        warningIngredients.value = warningRes.data || [];
       } catch (error) {
         console.error('获取仪表盘数据失败:', error);
-        this.$message.error('获取仪表盘数据失败');
+        // this.$message.error('获取仪表盘数据失败');
       } finally {
-        this.loading = false;
+        loading.value = false;
       }
-    },
-    handleInventoryIn(row) {
-      this.$router.push('/inventory');
-    }
+    };
+
+    const handleInventoryIn = (row) => {
+      router.push('/inventory');
+    };
+
+    const formatMoney = (value) => {
+      return value.toFixed(2);
+    };
+
+    onMounted(() => {
+      fetchData();
+    });
+
+    return {
+      statCards,
+      hotDishes,
+      warningIngredients,
+      handleInventoryIn,
+      formatMoney
+    };
   }
 }
 </script>

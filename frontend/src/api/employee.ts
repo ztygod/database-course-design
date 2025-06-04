@@ -1,4 +1,4 @@
-import request from '../utils/request';
+import request from "@/utils/request";
 
 // 获取所有员工
 export function getAllEmployees() {

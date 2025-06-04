@@ -1,4 +1,4 @@
-import request from '../utils/request';
+import request from "@/utils/request";
 
 // 获取所有库存记录
 export function getAllInventoryRecords() {

@@ -1,4 +1,4 @@
-import request from '../utils/request';
+import request from "@/utils/request";
 
 // 获取所有原材料
 export function getAllIngredients() {

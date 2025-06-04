@@ -33,9 +33,9 @@
         <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column>
         <el-table-column prop="address" label="地址" min-width="200"></el-table-column>
         <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+          <template #default="{ row }">
+            <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button size="mini" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -54,8 +54,8 @@
     </el-card>
     
     <!-- 添加/编辑供应商对话框 -->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="供应商名称" prop="supplier_name">
           <el-input v-model="form.supplier_name" placeholder="请输入供应商名称"></el-input>
         </el-form-item>
@@ -75,151 +75,147 @@
           <el-input type="textarea" v-model="form.notes" placeholder="请输入备注"></el-input>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="submitForm">确 定</el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import { getSuppliers, getSupplier, createSupplier, updateSupplier, deleteSupplier } from '@/api/supplier';
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '@/api/supplier'
 
-export default {
-  name: 'SupplierIndex',
-  data() {
-    return {
-      loading: false,
-      supplierList: [],
-      total: 0,
-      queryParams: {
-        page: 1,
-        limit: 10,
-        supplier_name: '',
-        contact_person: ''
-      },
-      
-      dialogVisible: false,
-      dialogTitle: '',
-      form: {
-        supplier_name: '',
-        contact_person: '',
-        phone: '',
-        email: '',
-        address: '',
-        notes: ''
-      },
-      
-      rules: {
-        supplier_name: [{ required: true, message: '请输入供应商名称', trigger: 'blur' }],
-        contact_person: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
-        phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
-      }
-    }
-  },
-  created() {
-    this.getSupplierList();
-  },
-  methods: {
-    async getSupplierList() {
-      this.loading = true;
-      try {
-        const res = await getSuppliers(this.queryParams);
-        this.supplierList = res.data.items || [];
-        this.total = res.data.total || 0;
-      } catch (error) {
-        console.error('获取供应商列表失败:', error);
-        this.$message.error('获取供应商列表失败');
-      } finally {
-        this.loading = false;
-      }
-    },
-    
-    handleQuery() {
-      this.queryParams.page = 1;
-      this.getSupplierList();
-    },
-    
-    resetQuery() {
-      this.queryParams = {
-        page: 1,
-        limit: 10,
-        supplier_name: '',
-        contact_person: ''
-      };
-      this.getSupplierList();
-    },
-    
-    handleSizeChange(val) {
-      this.queryParams.limit = val;
-      this.getSupplierList();
-    },
-    
-    handleCurrentChange(val) {
-      this.queryParams.page = val;
-      this.getSupplierList();
-    },
-    
-    handleAdd() {
-      this.dialogTitle = '添加供应商';
-      this.form = {
-        supplier_name: '',
-        contact_person: '',
-        phone: '',
-        email: '',
-        address: '',
-        notes: ''
-      };
-      this.dialogVisible = true;
-    },
-    
-    handleEdit(row) {
-      this.dialogTitle = '编辑供应商';
-      this.form = JSON.parse(JSON.stringify(row));
-      this.dialogVisible = true;
-    },
-    
-    async handleDelete(row) {
-      try {
-        await this.$confirm('确认删除该供应商吗？', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        });
-        
-        await deleteSupplier(row.supplier_id);
-        this.$message.success('删除成功');
-        this.getSupplierList();
-      } catch (error) {
-        console.error('删除供应商失败:', error);
-      }
-    },
-    
-    submitForm() {
-      this.$refs.form.validate(async valid => {
-        if (!valid) return;
-        
-        try {
-          if (this.form.supplier_id) {
-            // 更新
-            await updateSupplier(this.form.supplier_id, this.form);
-            this.$message.success('更新成功');
-          } else {
-            // 新增
-            await createSupplier(this.form);
-            this.$message.success('添加成功');
-          }
-          
-          this.dialogVisible = false;
-          this.getSupplierList();
-        } catch (error) {
-          console.error('保存供应商失败:', error);
-          this.$message.error('保存供应商失败');
-        }
-      });
-    }
+// 状态
+const loading = ref(false)
+const supplierList = ref([])
+const total = ref(0)
+const queryParams = reactive({
+  page: 1,
+  limit: 10,
+  supplier_name: '',
+  contact_person: ''
+})
+
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const form = reactive({
+  supplier_name: '',
+  contact_person: '',
+  phone: '',
+  email: '',
+  address: '',
+  notes: ''
+})
+
+const rules = {
+  supplier_name: [{ required: true, message: '请输入供应商名称', trigger: 'blur' }],
+  contact_person: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
+  phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
+}
+
+const formRef = ref(null)
+
+// const message = useMessage()
+// const confirm = useConfirm()
+
+onMounted(() => {
+  getSupplierList()
+})
+
+async function getSupplierList() {
+  loading.value = true
+  try {
+    const res = await getSuppliers(queryParams)
+    supplierList.value = res.data.items || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取供应商列表失败:', error)
+    ElMessage.error('获取供应商列表失败')
+  } finally {
+    loading.value = false
   }
+}
+
+function handleQuery() {
+  queryParams.page = 1
+  getSupplierList()
+}
+
+function resetQuery() {
+  queryParams.page = 1
+  queryParams.limit = 10
+  queryParams.supplier_name = ''
+  queryParams.contact_person = ''
+  getSupplierList()
+}
+
+function handleSizeChange(val) {
+  queryParams.limit = val
+  getSupplierList()
+}
+
+function handleCurrentChange(val) {
+  queryParams.page = val
+  getSupplierList()
+}
+
+function handleAdd() {
+  dialogTitle.value = '添加供应商'
+  Object.assign(form, {
+    supplier_name: '',
+    contact_person: '',
+    phone: '',
+    email: '',
+    address: '',
+    notes: ''
+  })
+  dialogVisible.value = true
+}
+
+function handleEdit(row) {
+  dialogTitle.value = '编辑供应商'
+  Object.assign(form, row)
+  dialogVisible.value = true
+}
+
+async function handleDelete(row) {
+  try {
+    await ElMessageBox.confirm('确认删除该供应商吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await deleteSupplier(row.supplier_id)
+    ElMessage.success('删除成功')
+    getSupplierList()
+  } catch (error) {
+    console.error('删除供应商失败:', error)
+  }
+}
+
+function submitForm() {
+  formRef.value.validate(async valid => {
+    if (!valid) return
+    try {
+      if (form.supplier_id) {
+        await updateSupplier(form.supplier_id, form)
+        ElMessage.success('更新成功')
+      } else {
+        await createSupplier(form)
+        ElMessage.success('添加成功')
+      }
+      dialogVisible.value = false
+      getSupplierList()
+    } catch (error) {
+      console.error('保存供应商失败:', error)
+      ElMessage.error('保存供应商失败')
+    }
+  })
 }
 </script>
 
