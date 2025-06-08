@@ -43,10 +43,10 @@
             <el-icon><ZoomIn /></el-icon>
             <span>员工管理</span>
           </el-menu-item>
-          <el-menu-item index="/statistics">
+          <!-- <el-menu-item index="/statistics">
             <el-icon><Grid /></el-icon>
             <span>统计分析</span>
-          </el-menu-item>
+          </el-menu-item> -->
         </el-menu>
       </el-aside>
       <el-container>

@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加员工</el-button>
     </div>
     
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="员工姓名">
           <el-input v-model="queryParams.employee_name" placeholder="请输入员工姓名" clearable></el-input>
@@ -24,7 +24,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
     
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -129,7 +129,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getEmployees, createEmployee, updateEmployee, deleteEmployee, updateEmployeeStatus } from '@/api/employee'
+import { getEmployees, createEmployee, updateEmployee, deleteEmployee, updateEmployeeStatus, getAllEmployees } from '@/api/employee'
 
 const loading = ref(false)
 const employeeList = ref([])
@@ -170,8 +170,8 @@ onMounted(() => {
 async function getEmployeeList() {
   loading.value = true
   try {
-    const res = await getEmployees(queryParams)
-    employeeList.value = res.data.items || []
+    const res = await getAllEmployees(queryParams)
+    employeeList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取员工列表失败:', error)

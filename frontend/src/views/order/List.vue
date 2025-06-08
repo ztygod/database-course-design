@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">新建订单</el-button>
     </div>
     
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="订单号">
           <el-input v-model="queryParams.order_number" placeholder="请输入订单号" clearable></el-input>
@@ -33,7 +33,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
     
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -318,7 +318,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getOrders, getOrder, createOrder, updateOrder, deleteOrder, settleOrder, cancelOrder, addOrderDetail, deleteOrderDetail } from '@/api/order'
+import { getAllOrders, getOrders, getOrder, createOrder, updateOrder, deleteOrder, settleOrder, cancelOrder, addOrderDetail, deleteOrderDetail } from '@/api/order'
 import { getAllMembers } from '@/api/member'
 import { getAllEmployees } from '@/api/employee'
 import { getAllCategories } from '@/api/category'
@@ -391,8 +391,8 @@ onMounted(() => {
 async function getOrderList() {
   loading.value = true
   try {
-    const res = await getOrders(queryParams)
-    orderList.value = res.data.items || []
+    const res = await getAllOrders(queryParams)
+    orderList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取订单列表失败:', error)

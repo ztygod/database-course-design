@@ -62,11 +62,11 @@ const router = createRouter({
       name: 'Employee',
       component: Employee
     },
-    {
-      path: '/statistics',
-      name: 'Statistics',
-      component: Statistics
-    }
+    // {
+    //   path: '/statistics',
+    //   name: 'Statistics',
+    //   component: Statistics
+    // }
   ],
 })
 

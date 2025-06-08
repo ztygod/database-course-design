@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加供应商</el-button>
     </div>
     
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="供应商名称">
           <el-input v-model="queryParams.supplier_name" placeholder="请输入供应商名称" clearable></el-input>
@@ -18,7 +18,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
     
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -88,7 +88,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '@/api/supplier'
+import { getSuppliers, createSupplier, updateSupplier, deleteSupplier, getAllSuppliers } from '@/api/supplier'
 
 // 状态
 const loading = ref(false)
@@ -130,8 +130,9 @@ onMounted(() => {
 async function getSupplierList() {
   loading.value = true
   try {
-    const res = await getSuppliers(queryParams)
-    supplierList.value = res.data.items || []
+    const res = await getAllSuppliers(queryParams)
+    console.log('res',res)
+    supplierList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取供应商列表失败:', error)

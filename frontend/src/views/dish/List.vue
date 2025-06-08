@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加菜品</el-button>
     </div>
     
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm" size="small">
         <el-form-item label="菜品名称" prop="dish_name">
           <el-input v-model="queryParams.dish_name" placeholder="请输入菜品名称" clearable></el-input>
@@ -31,7 +31,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
     
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -44,7 +44,7 @@
         <el-table-column prop="category_name" label="菜品类别" min-width="100"></el-table-column>
         <el-table-column prop="price" label="价格" min-width="80">
           <template #default="{ row }">
-            {{ row.price.toFixed(2) }} 元
+            {{ row.price }} 元
           </template>
         </el-table-column>
         <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip></el-table-column>
@@ -171,7 +171,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '@/components/common/Pagination.vue'
-import { getDishes, deleteDish, updateDishStatus, updateDish, createDish, getDishIngredients, updateDishIngredients } from '@/api/dish'
+import { getDishes, deleteDish, updateDishStatus, updateDish, createDish, getDishIngredients, updateDishIngredients,getAllDishes } from '@/api/dish'
 import { getAllCategories } from '@/api/category';
 import { getAllIngredients } from '@/api/ingredient';
 
@@ -224,8 +224,9 @@ onMounted(() => {
 async function getDishList() {
   loading.value = true
   try {
-    const res = await getDishes(queryParams)
-    dishList.value = res.data.items || []
+    const res = await getAllDishes(queryParams)
+    console.log('res',res)
+    dishList.value = res.data
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取菜品列表失败:', error)

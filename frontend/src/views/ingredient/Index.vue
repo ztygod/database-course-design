@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加原材料</el-button>
     </div>
     
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="原材料名称">
           <el-input v-model="queryParams.ingredient_name" placeholder="请输入原材料名称" clearable></el-input>
@@ -25,7 +25,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
     
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -136,7 +136,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '@/api/ingredient'
+import { getIngredients, createIngredient, updateIngredient, deleteIngredient, getAllIngredients } from '@/api/ingredient'
 import { getAllSuppliers } from '@/api/supplier'
 import { createInventoryRecord } from '@/api/inventory'
 
@@ -193,8 +193,8 @@ onMounted(() => {
 async function getIngredientList() {
   loading.value = true
   try {
-    const res = await getIngredients(queryParams)
-    ingredientList.value = res.data.items || []
+    const res = await getAllIngredients(queryParams)
+    ingredientList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取原材料列表失败:', error)

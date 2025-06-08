@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加会员</el-button>
     </div>
 
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="会员姓名">
           <el-input v-model="queryParams.member_name" placeholder="请输入会员姓名" clearable></el-input>
@@ -25,7 +25,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
 
     <el-card shadow="hover" class="table-container">
       <el-table v-loading="loading" :data="memberList" border style="width: 100%">
@@ -163,7 +163,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMembers, getMemberConsumption, createMember, updateMember, deleteMember } from '@/api/member'
+import { getMembers, getMemberConsumption, createMember, updateMember, deleteMember, getAllMembers } from '@/api/member'
 
 const loading = ref(false)
 const memberList = ref([])
@@ -213,8 +213,8 @@ onMounted(() => {
 async function getMemberList() {
   loading.value = true
   try {
-    const res = await getMembers(queryParams)
-    memberList.value = res.data.items || []
+    const res = await getAllMembers(queryParams)
+    memberList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取会员列表失败:', error)

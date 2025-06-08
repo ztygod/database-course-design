@@ -59,7 +59,7 @@ import { ref, reactive, onMounted } from 'vue'
 import moment from 'moment'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '@/components/common/Pagination.vue'
-import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/category'
+import { getCategories, createCategory, updateCategory, deleteCategory, getAllCategories } from '@/api/category'
 
 interface Category {
   category_id: number | undefined;
@@ -94,17 +94,17 @@ const formRef = ref()
 async function getCategoryList() {
   loading.value = true
   try {
-    // const res = await getCategories(queryParams)
-    const res = {
-      data: {
-        items: [
-          { category_id: 1, category_name: '蔬菜', description: '新鲜蔬菜', created_at: '2023-01-01 12:00:00' },
-          { category_id: 2, category_name: '水果', description: '各种水果', created_at: '2023-01-05 12:00:00' }
-        ],
-        total: 2
-      }
-    }
-    categoryList.value = res.data.items || []
+    const res = await getAllCategories(queryParams)
+    // const res = {
+    //   data: {
+    //     items: [
+    //       { category_id: 1, category_name: '蔬菜', description: '新鲜蔬菜', created_at: '2023-01-01 12:00:00' },
+    //       { category_id: 2, category_name: '水果', description: '各种水果', created_at: '2023-01-05 12:00:00' }
+    //     ],
+    //     total: 2
+    //   }
+    // }
+    categoryList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取类别列表失败:', error)
