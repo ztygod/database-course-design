@@ -58,7 +58,7 @@
         <el-table-column label="操作" width="200" align="center">
           <template #default="{ row }">
             <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button size="mini" type="success" @click="handleIngredient(row)">配料</el-button>
+            <!-- <el-button size="mini" type="success" @click="handleIngredient(row)">配料</el-button> -->
             <el-button 
               size="mini" 
               :type="row.status === 1 ? 'warning' : 'success'"
@@ -81,7 +81,7 @@
     
     <!-- 添加/编辑菜品对话框 -->
     <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="菜品名称" prop="dish_name">
           <el-input v-model="form.dish_name" placeholder="请输入菜品名称"></el-input>
         </el-form-item>
@@ -115,12 +115,12 @@
     </el-dialog>
     
     <!-- 配料管理对话框 -->
-    <el-dialog title="配料管理" v-model:visible="ingredientDialogVisible" width="700px" append-to-body>
+    <!-- <el-dialog title="配料管理" v-model="ingredientDialogVisible" width="700px" append-to-body>
       <div v-if="currentDish.dish_id">
         <p class="ingredient-dish-info">
           菜品：{{ currentDish.dish_name }} | 
           类别：{{ currentDish.category_name }} | 
-          价格：{{ currentDish.price ? currentDish.price.toFixed(2) : '0.00' }} 元
+          价格：{{ currentDish.price ? currentDish.price : '0.00' }} 元
         </p>
         
         <el-divider content-position="left">已添加配料</el-divider>
@@ -163,7 +163,7 @@
           </el-form-item>
         </el-form>
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -195,6 +195,7 @@ const form = reactive({
   description: '',
   status: 1
 })
+const formRef = ref(null)
 
 const rules = {
   dish_name: [{ required: true, message: '请输入菜品名称', trigger: 'blur' }],
@@ -304,7 +305,7 @@ async function handleStatusChange(row) {
   try {
     const newStatus = row.status === 1 ? 0 : 1
     await updateDishStatus(row.dish_id, newStatus)
-    ElMessageBox.success(`${newStatus === 1 ? '上架' : '下架'}成功`)
+    ElMessageBox.confirm(`${newStatus === 1 ? '上架' : '下架'}成功`)
     getDishList()
   } catch (error) {
     console.error('更新菜品状态失败:', error)
@@ -313,19 +314,19 @@ async function handleStatusChange(row) {
 }
 
 async function submitForm() {
-  const formRef = ref(null)
   formRef.value.validate(async (valid) => {
     if (!valid) return
     
     try {
+      console.log("from",form)
       if (form.dish_id) {
         // 更新
         await updateDish(form.dish_id, form)
-        ElMessageBox.success('更新成功')
+        ElMessageBox.confirm('更新成功')
       } else {
         // 新增
         await createDish(form)
-        ElMessageBox.success('添加成功')
+        ElMessageBox.confirm('添加成功')
       }
       
       dialogVisible.value = false
