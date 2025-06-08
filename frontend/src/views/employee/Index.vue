@@ -41,7 +41,7 @@
         </el-table-column>
         <el-table-column prop="position" label="职位" min-width="100"></el-table-column>
         <el-table-column prop="phone" label="联系电话" min-width="120"></el-table-column>
-        <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column>
+        <!-- <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column> -->
         <el-table-column prop="hire_date" label="入职日期" min-width="120">
           <template #default="{ row }">
             {{ row.hire_date | formatDate }}
@@ -83,7 +83,7 @@
     
     <!-- 添加/编辑员工对话框 -->
     <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="员工姓名" prop="employee_name">
           <el-input v-model="form.employee_name" placeholder="请输入员工姓名"></el-input>
         </el-form-item>
@@ -153,6 +153,7 @@ const form = reactive({
   hire_date: new Date().toISOString().split('T')[0],
   status: 1
 })
+const formRef = ref(null)
 
 const rules = {
   employee_name: [{ required: true, message: '请输入员工姓名', trigger: 'blur' }],
@@ -259,7 +260,6 @@ async function handleStatusChange(row) {
 }
 
 async function submitForm() {
-  const formRef = ref(null)
   formRef.value.validate(async (valid) => {
     if (!valid) return
     

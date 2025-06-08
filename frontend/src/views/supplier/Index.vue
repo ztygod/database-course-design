@@ -28,7 +28,7 @@
         style="width: 100%">
         <el-table-column type="index" width="50" align="center"></el-table-column>
         <el-table-column prop="supplier_name" label="供应商名称" min-width="120"></el-table-column>
-        <el-table-column prop="contact_person" label="联系人" width="100"></el-table-column>
+        <el-table-column prop="contact_name" label="联系人" width="100"></el-table-column>
         <el-table-column prop="phone" label="联系电话" width="120"></el-table-column>
         <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column>
         <el-table-column prop="address" label="地址" min-width="200"></el-table-column>
@@ -60,7 +60,7 @@
           <el-input v-model="form.supplier_name" placeholder="请输入供应商名称"></el-input>
         </el-form-item>
         <el-form-item label="联系人" prop="contact_person">
-          <el-input v-model="form.contact_person" placeholder="请输入联系人"></el-input>
+          <el-input v-model="form.contact_name" placeholder="请输入联系人"></el-input>
         </el-form-item>
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入联系电话"></el-input>
@@ -98,14 +98,14 @@ const queryParams = reactive({
   page: 1,
   limit: 10,
   supplier_name: '',
-  contact_person: ''
+  contact_name: ''
 })
 
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const form = reactive({
   supplier_name: '',
-  contact_person: '',
+  contact_name: '',
   phone: '',
   email: '',
   address: '',
@@ -114,7 +114,7 @@ const form = reactive({
 
 const rules = {
   supplier_name: [{ required: true, message: '请输入供应商名称', trigger: 'blur' }],
-  contact_person: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
+  contact_name: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
   phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
 }
 
@@ -151,7 +151,7 @@ function resetQuery() {
   queryParams.page = 1
   queryParams.limit = 10
   queryParams.supplier_name = ''
-  queryParams.contact_person = ''
+  queryParams.contact_name = ''
   getSupplierList()
 }
 
@@ -169,7 +169,7 @@ function handleAdd() {
   dialogTitle.value = '添加供应商'
   Object.assign(form, {
     supplier_name: '',
-    contact_person: '',
+    contact_name: '',
     phone: '',
     email: '',
     address: '',

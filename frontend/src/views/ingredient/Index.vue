@@ -51,8 +51,8 @@
             {{ row.warning_quantity }} {{ row.unit || '单位' }}
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" min-width="150"></el-table-column>
-        <el-table-column label="操作" width="200" align="center">
+        <!-- <el-table-column prop="description" label="描述" min-width="150"></el-table-column> -->
+        <el-table-column label="操作" width="300" align="center">
           <template #default="{ row }">
             <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button size="mini" type="success" @click="handleInventoryIn(row)">入库</el-button>
@@ -76,7 +76,7 @@
     
     <!-- 添加/编辑原材料对话框 -->
     <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="原材料名称" prop="ingredient_name">
           <el-input v-model="form.ingredient_name" placeholder="请输入原材料名称"></el-input>
         </el-form-item>
@@ -99,9 +99,9 @@
         <el-form-item label="预警数量" prop="warning_quantity">
           <el-input-number v-model="form.warning_quantity" :precision="2" :step="1" :min="0" style="width: 100%;"></el-input-number>
         </el-form-item>
-        <el-form-item label="描述" prop="description">
+        <!-- <el-form-item label="描述" prop="description">
           <el-input type="textarea" v-model="form.description" placeholder="请输入描述"></el-input>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取 消</el-button>
@@ -111,7 +111,7 @@
     
     <!-- 入库对话框 -->
     <el-dialog title="原材料入库" v-model="inventoryDialogVisible" width="400px">
-      <el-form ref="inventoryForm" :model="inventoryForm" :rules="inventoryRules" label-width="100px">
+      <el-form ref="inventoryFormRef" :model="inventoryForm" :rules="inventoryRules" label-width="100px">
         <el-form-item label="原材料">
           <span>{{ currentIngredient.ingredient_name }}</span>
         </el-form-item>
@@ -177,6 +177,8 @@ const inventoryForm = reactive({
   quantity: 1,
   notes: ''
 })
+const inventoryFormRef = ref(null)
+const formRef = ref(null)
 
 const inventoryRules = {
   quantity: [{ required: true, message: '请输入入库数量', trigger: 'blur' }]
@@ -255,7 +257,7 @@ function handleEdit(row) {
 
 async function handleDelete(row) {
   try {
-    await ElMessageBox('确认删除该原材料吗？', '警告', {
+    await ElMessageBox.confirm('确认删除该原材料吗？', '警告', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -279,7 +281,6 @@ function handleInventoryIn(row) {
 }
 
 function submitForm() {
-  const formRef = ref(null)
   formRef.value.validate(async (valid) => {
     if (!valid) return
     
@@ -302,7 +303,6 @@ function submitForm() {
 }
 
 function submitInventory() {
-  const inventoryFormRef = ref(null)
   inventoryFormRef.value.validate(async (valid) => {
     if (!valid) return
     

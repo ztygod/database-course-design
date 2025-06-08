@@ -128,13 +128,25 @@ module.exports = (pool) => {
   // 创建库存记录（入库/出库）
   router.post('/', async (req, res) => {
     try {
-      const { ingredient_id, operation_type, quantity, employee_id, remark } = req.body;
+      const { ingredient_id, type, quantity, notes } = req.body;
+      let operation_type;
+      switch (type) {
+        case 'in':
+          operation_type = 1
+          break;
+        case 'on':
+          operation_type = 2
+          break;
+      }
+      let employee_id = 3;
+      console.log(ingredient_id,type !== '1',quantity,notes)
+
       
       // 验证数据
-      if (!ingredient_id || !operation_type || !quantity || !employee_id) {
+      if (!ingredient_id || !type || !quantity || !notes) {
         return res.status(400).json({
           code: 400,
-          message: '原材料ID、操作类型、数量和操作员ID不能为空'
+          message: '原材料ID、操作类型、数量和备注不能为空'
         });
       }
       
@@ -206,7 +218,7 @@ module.exports = (pool) => {
             remark
           ) 
           VALUES (?, ?, ?, NOW(), ?, ?)
-        `, [ingredient_id, operation_type, quantity, employee_id, remark]);
+        `, [ingredient_id, operation_type, quantity, employee_id, notes]);
         
         // 更新原材料库存
         let newStockQuantity;
