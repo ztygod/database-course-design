@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加会员</el-button>
     </div>
 
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="会员姓名">
           <el-input v-model="queryParams.member_name" placeholder="请输入会员姓名" clearable></el-input>
@@ -25,20 +25,20 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
 
     <el-card shadow="hover" class="table-container">
       <el-table v-loading="loading" :data="memberList" border style="width: 100%">
         <el-table-column type="index" width="50" align="center"></el-table-column>
         <el-table-column prop="card_number" label="会员卡号" width="120"></el-table-column>
-        <el-table-column prop="member_name" label="会员姓名" min-width="100"></el-table-column>
+        <el-table-column prop="member_name" label="会员姓名" width="100"></el-table-column>
         <el-table-column prop="gender" label="性别" width="60" align="center">
           <template #default="{ row }">
             {{ row.gender === 'M' ? '男' : row.gender === 'F' ? '女' : '未知' }}
           </template>
         </el-table-column>
-        <el-table-column prop="phone" label="联系电话" min-width="120"></el-table-column>
-        <el-table-column prop="level" label="会员等级" width="100">
+        <el-table-column prop="phone" label="联系电话" width="120"></el-table-column>
+        <el-table-column prop="level" label="会员等级" width="120">
           <template #default="{ row }">
             <el-tag :type="getLevelType(row.level)">
               {{ getLevelName(row.level) }}
@@ -46,7 +46,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="points" label="积分" width="80" align="center"></el-table-column>
-        <el-table-column prop="register_date" label="注册日期" width="120">
+        <!-- <el-table-column prop="register_date" label="注册日期" width="120">
           <template #default="{ row }">
             {{ row.register_date | formatDate }}
           </template>
@@ -55,8 +55,8 @@
           <template #default="{ row }">
             {{ row.birthday | formatDate }}
           </template>
-        </el-table-column>
-        <el-table-column label="操作" width="200" align="center">
+        </el-table-column> -->
+        <el-table-column label="操作" width="300" align="center">
           <template #default="{ row }">
             <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button size="mini" type="info" @click="handleConsumption(row)">消费记录</el-button>
@@ -80,7 +80,7 @@
 
     <!-- 添加/编辑会员对话框 -->
     <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="会员卡号" prop="card_number">
           <el-input v-model="form.card_number" placeholder="请输入会员卡号"></el-input>
         </el-form-item>
@@ -163,7 +163,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMembers, getMemberConsumption, createMember, updateMember, deleteMember } from '@/api/member'
+import { getMembers, getMemberConsumption, createMember, updateMember, deleteMember, getAllMembers } from '@/api/member'
 
 const loading = ref(false)
 const memberList = ref([])
@@ -190,6 +190,7 @@ const form = reactive({
   email: '',
   address: ''
 })
+const formRef = ref(null)
 
 const rules = {
   card_number: [{ required: true, message: '请输入会员卡号', trigger: 'blur' }],
@@ -213,8 +214,8 @@ onMounted(() => {
 async function getMemberList() {
   loading.value = true
   try {
-    const res = await getMembers(queryParams)
-    memberList.value = res.data.items || []
+    const res = await getAllMembers(queryParams)
+    memberList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取会员列表失败:', error)
@@ -324,7 +325,6 @@ async function handleConsumption(row) {
 }
 
 function submitForm() {
-  const formRef = ref(null)
   formRef.value.validate(async (valid) => {
     if (!valid) return
 

@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加供应商</el-button>
     </div>
     
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="供应商名称">
           <el-input v-model="queryParams.supplier_name" placeholder="请输入供应商名称" clearable></el-input>
@@ -18,7 +18,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
     
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -28,7 +28,7 @@
         style="width: 100%">
         <el-table-column type="index" width="50" align="center"></el-table-column>
         <el-table-column prop="supplier_name" label="供应商名称" min-width="120"></el-table-column>
-        <el-table-column prop="contact_person" label="联系人" width="100"></el-table-column>
+        <el-table-column prop="contact_name" label="联系人" width="100"></el-table-column>
         <el-table-column prop="phone" label="联系电话" width="120"></el-table-column>
         <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column>
         <el-table-column prop="address" label="地址" min-width="200"></el-table-column>
@@ -60,7 +60,7 @@
           <el-input v-model="form.supplier_name" placeholder="请输入供应商名称"></el-input>
         </el-form-item>
         <el-form-item label="联系人" prop="contact_person">
-          <el-input v-model="form.contact_person" placeholder="请输入联系人"></el-input>
+          <el-input v-model="form.contact_name" placeholder="请输入联系人"></el-input>
         </el-form-item>
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入联系电话"></el-input>
@@ -88,7 +88,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from '@/api/supplier'
+import { getSuppliers, createSupplier, updateSupplier, deleteSupplier, getAllSuppliers } from '@/api/supplier'
 
 // 状态
 const loading = ref(false)
@@ -98,14 +98,14 @@ const queryParams = reactive({
   page: 1,
   limit: 10,
   supplier_name: '',
-  contact_person: ''
+  contact_name: ''
 })
 
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const form = reactive({
   supplier_name: '',
-  contact_person: '',
+  contact_name: '',
   phone: '',
   email: '',
   address: '',
@@ -114,7 +114,7 @@ const form = reactive({
 
 const rules = {
   supplier_name: [{ required: true, message: '请输入供应商名称', trigger: 'blur' }],
-  contact_person: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
+  contact_name: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
   phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
 }
 
@@ -130,8 +130,9 @@ onMounted(() => {
 async function getSupplierList() {
   loading.value = true
   try {
-    const res = await getSuppliers(queryParams)
-    supplierList.value = res.data.items || []
+    const res = await getAllSuppliers(queryParams)
+    console.log('res',res)
+    supplierList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取供应商列表失败:', error)
@@ -150,7 +151,7 @@ function resetQuery() {
   queryParams.page = 1
   queryParams.limit = 10
   queryParams.supplier_name = ''
-  queryParams.contact_person = ''
+  queryParams.contact_name = ''
   getSupplierList()
 }
 
@@ -168,7 +169,7 @@ function handleAdd() {
   dialogTitle.value = '添加供应商'
   Object.assign(form, {
     supplier_name: '',
-    contact_person: '',
+    contact_name: '',
     phone: '',
     email: '',
     address: '',

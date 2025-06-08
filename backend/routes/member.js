@@ -208,6 +208,8 @@ module.exports = (pool) => {
         });
       }
       
+      let data = formatDate(register_date);
+
       // 检查会员是否存在
       const [existingMember] = await pool.query(`
         SELECT member_id FROM member WHERE member_id = ?
@@ -245,7 +247,7 @@ module.exports = (pool) => {
           register_date = ?, 
           updated_at = CURRENT_TIMESTAMP 
         WHERE member_id = ?
-      `, [card_number, member_name, phone, level, points, register_date, memberId]);
+      `, [card_number, member_name, phone, level, points, data, memberId]);
       
       // 获取更新后的会员
       const [updatedMember] = await pool.query(`
@@ -403,3 +405,22 @@ module.exports = (pool) => {
 
   return router;
 };
+
+function formatDate(isoString) {
+  const date = new Date(isoString)
+
+  const pad = (n) => n.toString().padStart(2, '0')
+
+  const year = date.getFullYear()
+  const month = pad(date.getMonth() + 1)
+  const day = pad(date.getDate())
+  const hour = pad(date.getHours())
+  const minute = pad(date.getMinutes())
+  const second = pad(date.getSeconds())
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
+const iso = '2021-01-09T16:00:00.000Z'
+console.log(formatDate(iso))
+// 输出如：2021-01-09 16:00:00（若为 UTC，会按本地时间显示）

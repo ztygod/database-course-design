@@ -8,7 +8,7 @@
       </div>
     </div>
 
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="原材料">
           <el-select v-model="queryParams.ingredient_id" placeholder="请选择原材料" clearable filterable>
@@ -42,7 +42,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
 
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -121,7 +121,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getInventoryRecords, createInventoryRecord } from '@/api/inventory'
+import { getInventoryRecords, createInventoryRecord, getAllInventoryRecords } from '@/api/inventory'
 import { getAllIngredients } from '@/api/ingredient'
 
 const loading = ref(false)
@@ -164,8 +164,8 @@ onMounted(() => {
 async function getInventoryList() {
   loading.value = true
   try {
-    const res = await getInventoryRecords(queryParams)
-    inventoryList.value = res.data.items || []
+    const res = await getAllInventoryRecords(queryParams)
+    inventoryList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取库存记录失败:', error)

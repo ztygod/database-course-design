@@ -5,7 +5,7 @@
       <el-button type="primary" @click="handleAdd">添加员工</el-button>
     </div>
     
-    <el-card shadow="hover" class="filter-container">
+    <!-- <el-card shadow="hover" class="filter-container">
       <el-form :inline="true" :model="queryParams" ref="queryForm">
         <el-form-item label="员工姓名">
           <el-input v-model="queryParams.employee_name" placeholder="请输入员工姓名" clearable></el-input>
@@ -24,7 +24,7 @@
           <el-button icon="el-icon-refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </el-card> -->
     
     <el-card shadow="hover" class="table-container">
       <el-table
@@ -41,7 +41,7 @@
         </el-table-column>
         <el-table-column prop="position" label="职位" min-width="100"></el-table-column>
         <el-table-column prop="phone" label="联系电话" min-width="120"></el-table-column>
-        <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column>
+        <!-- <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column> -->
         <el-table-column prop="hire_date" label="入职日期" min-width="120">
           <template #default="{ row }">
             {{ row.hire_date | formatDate }}
@@ -83,7 +83,7 @@
     
     <!-- 添加/编辑员工对话框 -->
     <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="员工姓名" prop="employee_name">
           <el-input v-model="form.employee_name" placeholder="请输入员工姓名"></el-input>
         </el-form-item>
@@ -129,7 +129,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getEmployees, createEmployee, updateEmployee, deleteEmployee, updateEmployeeStatus } from '@/api/employee'
+import { getEmployees, createEmployee, updateEmployee, deleteEmployee, updateEmployeeStatus, getAllEmployees } from '@/api/employee'
 
 const loading = ref(false)
 const employeeList = ref([])
@@ -153,6 +153,7 @@ const form = reactive({
   hire_date: new Date().toISOString().split('T')[0],
   status: 1
 })
+const formRef = ref(null)
 
 const rules = {
   employee_name: [{ required: true, message: '请输入员工姓名', trigger: 'blur' }],
@@ -170,8 +171,8 @@ onMounted(() => {
 async function getEmployeeList() {
   loading.value = true
   try {
-    const res = await getEmployees(queryParams)
-    employeeList.value = res.data.items || []
+    const res = await getAllEmployees(queryParams)
+    employeeList.value = res.data || []
     total.value = res.data.total || 0
   } catch (error) {
     console.error('获取员工列表失败:', error)
@@ -259,7 +260,6 @@ async function handleStatusChange(row) {
 }
 
 async function submitForm() {
-  const formRef = ref(null)
   formRef.value.validate(async (valid) => {
     if (!valid) return
     
