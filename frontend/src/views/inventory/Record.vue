@@ -53,7 +53,7 @@
         <el-table-column type="index" width="50" align="center"></el-table-column>
         <el-table-column prop="record_time" label="记录时间" width="180">
           <template #default="{ row }">
-            {{ row.record_time | formatDateTime }}
+            {{ formatDate(row.operation_time)}}
           </template>
         </el-table-column>
         <el-table-column prop="ingredient_name" label="原材料名称" min-width="120"></el-table-column>
@@ -270,6 +270,22 @@ function submitForm() {
     }
   })
 }
+
+function formatDate(isoString) {
+  const date = new Date(isoString)
+
+  const pad = (n) => n.toString().padStart(2, '0')
+
+  const year = date.getFullYear()
+  const month = pad(date.getMonth() + 1)
+  const day = pad(date.getDate())
+  const hour = pad(date.getHours())
+  const minute = pad(date.getMinutes())
+  const second = pad(date.getSeconds())
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
 </script>
 
 <style scoped>
