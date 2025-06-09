@@ -44,7 +44,7 @@
         <!-- <el-table-column prop="email" label="邮箱" min-width="150"></el-table-column> -->
         <el-table-column prop="hire_date" label="入职日期" min-width="120">
           <template #default="{ row }">
-            {{ row.hire_date | formatDate }}
+            {{ formatDateToYMD(row.hire_date) }}
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="80">
@@ -54,7 +54,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" min-width="200" align="center">
           <template #default="{ row }">
             <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button 
@@ -99,15 +99,14 @@
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入联系电话"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" prop="email">
+        <!-- <el-form-item label="邮箱" prop="email">
           <el-input v-model="form.email" placeholder="请输入邮箱"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="入职日期" prop="hire_date">
           <el-date-picker
             v-model="form.hire_date"
             type="date"
-            placeholder="选择日期"
-            value-format="yyyy-MM-dd"
+            placeholder="选择日期"      
             style="width: 100%">
           </el-date-picker>
         </el-form-item>
@@ -173,7 +172,14 @@ async function getEmployeeList() {
   try {
     const res = await getAllEmployees(queryParams)
     employeeList.value = res.data || []
+    employeeList.value = employeeList.value.map(emp => ({
+      ...emp,
+      hire_date: formatDateToYMD(emp.hire_date),
+      // created_at: formatDateToYMD(emp.created_at),
+      // updated_at: formatDateToYMD(emp.updated_at),
+    }))
     total.value = res.data.total || 0
+    console.log('res',employeeList.value)
   } catch (error) {
     console.error('获取员工列表失败:', error)
     ElMessage.error('获取员工列表失败')
@@ -194,6 +200,14 @@ function resetQuery() {
   handleQuery()
 }
 
+function formatDateToYMD(dateStr) {
+  const date = new Date(dateStr)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function handleSizeChange(val) {
   queryParams.limit = val
   getEmployeeList()
@@ -208,6 +222,7 @@ function handleAdd() {
   dialogTitle.value = '添加员工'
   Object.assign(form, {
     employee_name: '',
+    employee_id: '',
     gender: 'M',
     position: '',
     phone: '',
@@ -262,10 +277,12 @@ async function handleStatusChange(row) {
 async function submitForm() {
   formRef.value.validate(async (valid) => {
     if (!valid) return
-    
+
+    form.hire_date = formatDateToYMD(form.hire_date)
     try {
       if (form.employee_id) {
         // 更新
+        console.log('res',form)
         await updateEmployee(form.employee_id, form)
         ElMessage.success('更新成功')
       } else {

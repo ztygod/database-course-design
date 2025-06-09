@@ -63,7 +63,7 @@
         <el-table-column prop="member_name" label="会员" width="120"></el-table-column>
         <el-table-column prop="employee_name" label="服务员" width="120"></el-table-column>
         <el-table-column prop="notes" label="备注" min-width="150"></el-table-column>
-        <el-table-column label="操作" width="250" align="center">
+        <el-table-column label="操作" min-width="250" align="center">
           <template #default="{ row }">
             <el-button size="mini" type="primary" @click="handleView(row)">查看</el-button>
             <el-button 
@@ -76,14 +76,14 @@
             <el-button 
               size="mini" 
               type="warning" 
-              v-if="row.status === 0"
+              
               @click="handleEdit(row)">
               编辑
             </el-button>
             <el-button 
               size="mini" 
               type="danger" 
-              v-if="row.status === 0"
+              
               @click="handleCancel(row)">
               取消
             </el-button>
@@ -106,7 +106,7 @@
     
     <!-- 新建/编辑订单对话框 -->
     <el-dialog :title="dialogTitle" v-model="dialogVisible" width="800px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="会员" prop="member_id">
@@ -322,7 +322,7 @@ import { getAllOrders, getOrders, getOrder, createOrder, updateOrder, deleteOrde
 import { getAllMembers } from '@/api/member'
 import { getAllEmployees } from '@/api/employee'
 import { getAllCategories } from '@/api/category'
-import { getDishes } from '@/api/dish'
+import { getDishes,getAllDishes } from '@/api/dish'
 
 const loading = ref(false)
 const orderList = ref([])
@@ -362,7 +362,7 @@ const itemForm = reactive({
   category_id: '',
   keyword: ''
 })
-
+const formRef = ref(null)
 const viewDialogVisible = ref(false)
 const currentOrder = ref(null)
 const orderDetails = ref([])
@@ -492,7 +492,8 @@ function handleAdd() {
     employee_id: '',
     notes: '',
     order_items: [],
-    total_amount: 0
+    total_amount: 0,
+    order_id:'',
   })
   dialogVisible.value = true
 }
@@ -581,8 +582,8 @@ async function searchDishes() {
       limit: 100
     }
     
-    const res = await getDishes(params)
-    dishOptions.value = res.data.items || []
+    const res = await getAllDishes()
+    dishOptions.value = res.data || []
   } catch (error) {
     console.error('搜索菜品失败:', error)
   } finally {
@@ -627,8 +628,7 @@ function submitForm() {
     ElMessage.warning('请至少添加一个菜品')
     return
   }
-  
-  const formRef = ref(null)
+  console.log('resorder',form)
   formRef.value.validate(async (valid) => {
     if (!valid) return
     

@@ -55,7 +55,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" min-width="200" align="center">
           <template #default="{ row }">
             <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
             <!-- <el-button size="mini" type="success" @click="handleIngredient(row)">配料</el-button> -->

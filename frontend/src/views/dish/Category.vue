@@ -19,7 +19,7 @@
             {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" align="center">
+        <el-table-column label="操作" min-width="150" align="center">
           <template #default="{ row }">
             <el-button size="mini" type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button size="mini" type="danger" @click="handleDelete(row)">删除</el-button>
