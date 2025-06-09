@@ -143,13 +143,13 @@
         </div>
         
         <el-table :data="form.order_items" border style="width: 100%; margin-bottom: 20px;">
-          <el-table-column prop="dish_name" label="菜品名称" min-width="150"></el-table-column>
+          <el-table-column prop="dish_name" label="菜品名称" width="300"></el-table-column>
           <el-table-column prop="price" label="单价" width="100">
             <template #default="{ row }">
-              {{ row.price | formatMoney }} 元
+              {{ row.subtotal | formatMoney }} 元
             </template>
           </el-table-column>
-          <el-table-column prop="quantity" label="数量" width="100">
+          <el-table-column prop="quantity" label="数量" min-width="100">
             <template #default="{ row }">
               <el-input-number 
                 v-model="row.quantity" 
@@ -162,7 +162,7 @@
           </el-table-column>
           <el-table-column prop="subtotal" label="小计" width="120">
             <template #default="{ row }">
-              {{ (row.price * row.quantity) | formatMoney }} 元
+              {{ (row.subtotal * row.quantity) | formatMoney }} 元
             </template>
           </el-table-column>
           <el-table-column label="操作" width="80" align="center">
@@ -190,7 +190,7 @@
     
     <!-- 添加菜品对话框 -->
     <el-dialog title="添加菜品" v-model="itemDialogVisible" width="600px">
-      <el-form :inline="true" :model="itemForm">
+      <!-- <el-form :inline="true" :model="itemForm">
         <el-form-item label="菜品类别">
           <el-select v-model="itemForm.category_id" placeholder="请选择类别" @change="handleCategoryChange" clearable>
             <el-option
@@ -207,7 +207,7 @@
         <el-form-item>
           <el-button type="primary" @click="searchDishes">搜索</el-button>
         </el-form-item>
-      </el-form>
+      </el-form> -->
       
       <el-table
         v-loading="dishLoading"
@@ -284,7 +284,7 @@
         <p><strong>订单号：</strong>{{ currentOrder.order_number }}</p>
         <p><strong>总金额：</strong>{{ currentOrder.total_amount | formatMoney }} 元</p>
         
-        <el-form ref="settleForm" :model="settleForm" :rules="settleRules" label-width="100px">
+        <el-form ref="settleFormRef" :model="settleForm" :rules="settleRules" label-width="100px">
           <el-form-item label="支付方式" prop="payment_method">
             <el-select v-model="settleForm.payment_method" placeholder="请选择支付方式" style="width: 100%;">
               <el-option label="现金" value="cash"></el-option>
@@ -318,11 +318,11 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAllOrders, getOrders, getOrder, createOrder, updateOrder, deleteOrder, settleOrder, cancelOrder, addOrderDetail, deleteOrderDetail } from '@/api/order'
+import { getAllOrders, getOrders, getOrder, createOrder, updateOrder, deleteOrder, settleOrder, cancelOrder, addOrderDetail, deleteOrderDetail, getOrderDetail } from '@/api/order'
 import { getAllMembers } from '@/api/member'
 import { getAllEmployees } from '@/api/employee'
 import { getAllCategories } from '@/api/category'
-import { getDishes,getAllDishes } from '@/api/dish'
+import { getDishes,getAllDishes,getDish } from '@/api/dish'
 
 const loading = ref(false)
 const orderList = ref([])
@@ -363,6 +363,7 @@ const itemForm = reactive({
   keyword: ''
 })
 const formRef = ref(null)
+const settleFormRef = ref(null)
 const viewDialogVisible = ref(false)
 const currentOrder = ref(null)
 const orderDetails = ref([])
@@ -503,13 +504,17 @@ async function handleEdit(row) {
   try {
     const res = await getOrder(row.order_id)
     const orderData = res.data || {}
+    const dish_content = [];
+    let dish_res = await getOrderDetail(row.order_id)
+    dish_content.push(...dish_res.data)
+    console.log('resorder',orderData,dish_content)
     
     Object.assign(form, {
       order_id: orderData.order_id,
       member_id: orderData.member_id || '',
       employee_id: orderData.employee_id,
       notes: orderData.notes || '',
-      order_items: orderData.order_items || [],
+      order_items: dish_content || [],
       total_amount: orderData.total_amount || 0
     })
     
@@ -653,7 +658,6 @@ function submitForm() {
 }
 
 function submitSettle() {
-  const settleFormRef = ref(null)
   settleFormRef.value.validate(async (valid) => {
     if (!valid) return
     

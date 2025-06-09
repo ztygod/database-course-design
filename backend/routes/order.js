@@ -123,7 +123,6 @@ module.exports = (pool) => {
         LEFT JOIN member m ON o.member_id = m.member_id
         WHERE o.order_id = ?
       `, [orderId]);
-      
       if (orders.length === 0) {
         return res.status(404).json({
           code: 404,
@@ -134,7 +133,7 @@ module.exports = (pool) => {
       const order = orders[0];
       
       // 查询订单明细
-      const [details] = await pool.query(`
+      const [order_detail] = await pool.query(`
         SELECT 
           od.detail_id,
           od.order_id,
@@ -150,7 +149,8 @@ module.exports = (pool) => {
       `, [orderId]);
       
       // 组合结果
-      order.details = details;
+      order.order_items = order_detail.map((item) => item.dish_id);
+      console.log('dish_id',order_detail,order.order_items)
       
       res.json({
         code: 200,
@@ -166,6 +166,43 @@ module.exports = (pool) => {
       });
     }
   });
+
+  // 获取订单明细
+  router.get('/:id/detail',async (req,res) => {
+    try{
+      const orderId = req.params.id;
+      // 查询订单明细
+      const [order_detail] = await pool.query(`
+        SELECT 
+          od.detail_id,
+          od.order_id,
+          od.dish_id,
+          d.dish_name,
+          od.quantity,
+          od.unit_price,
+          od.subtotal,
+          od.remark
+        FROM order_detail od
+        JOIN dish d ON od.dish_id = d.dish_id
+        WHERE od.order_id = ?
+      `, [orderId]);
+
+      console.log('resdetail',order_detail)
+      res.json({
+          code: 200,
+          message: '获取成功',
+          data: order_detail
+      });
+    } catch (error) {
+      console.error('获取订单明细失败:', error);
+      res.status(500).json({
+        code: 500,
+        message: '获取订单明细失败',
+        error: error.message
+      });
+    }
+
+  })
 
   // 创建订单
   router.post('/', async (req, res) => {
@@ -348,9 +385,10 @@ module.exports = (pool) => {
         customer_count, 
         employee_id, 
         member_id, 
-        details,
         total_amount
       } = req.body;
+      const details = req.body.order_items
+      console.log('resupdate',req.body,details)
       let table_number = 'A1'
       // 验证数据
       if (!table_number || !employee_id) {

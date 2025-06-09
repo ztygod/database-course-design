@@ -7,10 +7,10 @@
           background-color="#304156"
           text-color="#bfcbd9"
           active-text-color="#409EFF">
-          <el-menu-item index="/dashboard">
+          <!-- <el-menu-item index="/dashboard">
               <el-icon><House /></el-icon>
             <span>首页</span>
-          </el-menu-item>
+          </el-menu-item> -->
           <el-menu-item index="/dish">
             <el-icon><Notification /></el-icon>
             <span>菜品列表</span>
