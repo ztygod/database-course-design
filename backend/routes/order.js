@@ -170,14 +170,15 @@ module.exports = (pool) => {
   // 创建订单
   router.post('/', async (req, res) => {
     try {
-      const { 
-        table_number, 
+      const {  
         customer_count = 1, 
         employee_id, 
         member_id = null, 
-        details = [] 
+        details = [] ,
+        total_amount
       } = req.body;
       
+      let table_number = 'A1'
       // 验证数据
       if (!table_number || !employee_id) {
         return res.status(400).json({
@@ -186,12 +187,12 @@ module.exports = (pool) => {
         });
       }
       
-      if (details.length === 0) {
-        return res.status(400).json({
-          code: 400,
-          message: '订单明细不能为空'
-        });
-      }
+      // if (details.length === 0) {
+      //   return res.status(400).json({
+      //     code: 400,
+      //     message: '订单明细不能为空'
+      //   });
+      // }
       
       // 检查服务员是否存在
       const [employees] = await pool.query(`
@@ -244,7 +245,8 @@ module.exports = (pool) => {
         const orderId = orderResult.insertId;
         
         // 插入订单明细
-        let totalAmount = 0;
+        let totalAmount = total_amount;
+        console.log('totalAmount',total_amount,totalAmount)
         
         for (const detail of details) {
           // 检查菜品是否存在并获取价格
@@ -342,14 +344,14 @@ module.exports = (pool) => {
   router.put('/:id', async (req, res) => {
     try {
       const orderId = req.params.id;
-      const { 
-        table_number, 
+      const {  
         customer_count, 
         employee_id, 
         member_id, 
-        details 
+        details,
+        total_amount
       } = req.body;
-      
+      let table_number = 'A1'
       // 验证数据
       if (!table_number || !employee_id) {
         return res.status(400).json({
@@ -429,7 +431,7 @@ module.exports = (pool) => {
           `, [orderId]);
           
           // 插入新的订单明细
-          let totalAmount = 0;
+          let totalAmount = total_amount;
           
           for (const detail of details) {
             // 检查菜品是否存在并获取价格

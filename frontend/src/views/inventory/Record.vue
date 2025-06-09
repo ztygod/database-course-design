@@ -59,8 +59,8 @@
         <el-table-column prop="ingredient_name" label="原材料名称" min-width="120"></el-table-column>
         <el-table-column prop="type" label="类型" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.type === 'in' ? 'success' : 'danger'">
-              {{ row.type === 'in' ? '入库' : '出库' }}
+            <el-tag :type="row.operation_type === 1 ? 'success' : 'danger'">
+              {{ row.operation_type === 1 ? '入库' : '出库' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -88,7 +88,7 @@
 
     <!-- 入库/出库对话框 -->
     <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="原材料" prop="ingredient_id">
           <el-select v-model="form.ingredient_id" placeholder="请选择原材料" filterable style="width: 100%;">
             <el-option
@@ -135,7 +135,7 @@ const queryParams = reactive({
   start_date: '',
   end_date: ''
 })
-
+const formRef = ref(null)
 const dateRange = ref([])
 
 const ingredientOptions = ref([])
@@ -167,6 +167,7 @@ async function getInventoryList() {
     const res = await getAllInventoryRecords(queryParams)
     inventoryList.value = res.data || []
     total.value = res.data.total || 0
+    console.log('res',inventoryList.value)
   } catch (error) {
     console.error('获取库存记录失败:', error)
     ElMessage.error('获取库存记录失败')
@@ -245,7 +246,7 @@ function handleOutStock() {
 }
 
 function submitForm() {
-  const formRef = ref(null)
+  console.log('from',form)
   formRef.value.validate(async (valid) => {
     if (!valid) return
 

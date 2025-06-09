@@ -32,11 +32,11 @@
         <el-table-column type="index" width="50" align="center"></el-table-column>
         <el-table-column prop="card_number" label="会员卡号" width="120"></el-table-column>
         <el-table-column prop="member_name" label="会员姓名" width="100"></el-table-column>
-        <el-table-column prop="gender" label="性别" width="60" align="center">
+        <!-- <el-table-column prop="gender" label="性别" width="60" align="center">
           <template #default="{ row }">
             {{ row.gender === 'M' ? '男' : row.gender === 'F' ? '女' : '未知' }}
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column prop="phone" label="联系电话" width="120"></el-table-column>
         <el-table-column prop="level" label="会员等级" width="120">
           <template #default="{ row }">
@@ -87,12 +87,12 @@
         <el-form-item label="会员姓名" prop="member_name">
           <el-input v-model="form.member_name" placeholder="请输入会员姓名"></el-input>
         </el-form-item>
-        <el-form-item label="性别" prop="gender">
+        <!-- <el-form-item label="性别" prop="gender">
           <el-radio-group v-model="form.gender">
             <el-radio label="M">男</el-radio>
             <el-radio label="F">女</el-radio>
           </el-radio-group>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入联系电话"></el-input>
         </el-form-item>
@@ -106,7 +106,7 @@
         <el-form-item label="积分" prop="points">
           <el-input-number v-model="form.points" :min="0" :step="100" style="width: 100%;"></el-input-number>
         </el-form-item>
-        <el-form-item label="生日" prop="birthday">
+        <!-- <el-form-item label="生日" prop="birthday">
           <el-date-picker v-model="form.birthday" type="date" placeholder="选择日期" value-format="yyyy-MM-dd" style="width: 100%;">
           </el-date-picker>
         </el-form-item>
@@ -115,7 +115,7 @@
         </el-form-item>
         <el-form-item label="地址" prop="address">
           <el-input type="textarea" v-model="form.address" placeholder="请输入地址"></el-input>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取 消</el-button>
@@ -217,6 +217,7 @@ async function getMemberList() {
     const res = await getAllMembers(queryParams)
     memberList.value = res.data || []
     total.value = res.data.total || 0
+    console.log('res',memberList.value)
   } catch (error) {
     console.error('获取会员列表失败:', error)
     ElMessage.error('获取会员列表失败')
@@ -274,13 +275,15 @@ function handleAdd() {
   Object.assign(form, {
     card_number: '',
     member_name: '',
+    merber_id:'',
     gender: 'M',
     phone: '',
     level: 1,
     points: 0,
     birthday: '',
     email: '',
-    address: ''
+    address: '',
+    register_date:''
   })
   dialogVisible.value = true
 }
@@ -333,6 +336,8 @@ function submitForm() {
         await updateMember(form.member_id, form)
         ElMessage.success('更新成功')
       } else {
+        form.register_date = getLocalDateOnly(new Date())
+        console.log('res',form)
         await createMember(form)
         ElMessage.success('添加成功')
       }
@@ -345,6 +350,13 @@ function submitForm() {
     }
   })
 }
+
+function getLocalDateOnly(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+  }
 </script>
 
 <style scoped>

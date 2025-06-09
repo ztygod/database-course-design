@@ -134,7 +134,7 @@ module.exports = (pool) => {
         case 'in':
           operation_type = 1
           break;
-        case 'on':
+        case 'out':
           operation_type = 2
           break;
       }
