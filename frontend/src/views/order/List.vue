@@ -146,7 +146,7 @@
           <el-table-column prop="dish_name" label="菜品名称" width="300"></el-table-column>
           <el-table-column prop="price" label="单价" width="100">
             <template #default="{ row }">
-              {{ row.subtotal | formatMoney }} 元
+              {{ row.price | row.unit_price | formatMoney }} 元
             </template>
           </el-table-column>
           <el-table-column prop="quantity" label="数量" min-width="100">
@@ -162,7 +162,7 @@
           </el-table-column>
           <el-table-column prop="subtotal" label="小计" width="120">
             <template #default="{ row }">
-              {{ (row.subtotal * row.quantity) | formatMoney }} 元
+              {{ (row.price * row.quantity) | row.subtotal | formatMoney }} 元
             </template>
           </el-table-column>
           <el-table-column label="操作" width="80" align="center">
@@ -239,7 +239,7 @@
       <div v-if="currentOrder" class="order-detail">
         <div class="order-info">
           <p><strong>订单号：</strong>{{ currentOrder.order_number }}</p>
-          <p><strong>下单时间：</strong>{{ currentOrder.order_time | formatDateTime }}</p>
+          <p><strong>下单时间：</strong>{{ formatDate(currentOrder.order_time)}}</p>
           <p><strong>状态：</strong>
             <el-tag :type="getStatusType(currentOrder.status)">
               {{ getStatusText(currentOrder.status) }}
@@ -257,20 +257,20 @@
           <el-table-column prop="dish_name" label="菜品名称" min-width="150"></el-table-column>
           <el-table-column prop="price" label="单价" width="100">
             <template #default="{ row }">
-              {{ row.price | formatMoney }} 元
+              {{ row.unit_price | formatMoney }} 元
             </template>
           </el-table-column>
           <el-table-column prop="quantity" label="数量" width="80" align="center"></el-table-column>
           <el-table-column prop="subtotal" label="小计" width="120">
             <template #default="{ row }">
-              {{ (row.price * row.quantity) | formatMoney }} 元
+              {{ row.subtotal| formatMoney }} 元
             </template>
           </el-table-column>
         </el-table>
         
         <div class="order-summary">
           <p><strong>总金额：</strong>{{ currentOrder.total_amount | formatMoney }} 元</p>
-          <p v-if="currentOrder.status === 1"><strong>结算时间：</strong>{{ currentOrder.settlement_time | formatDateTime }}</p>
+          <p v-if="currentOrder.status === 1"><strong>结算时间：</strong>{{ formatDate(currentOrder.payment_time)  }}</p>
         </div>
       </div>
       <template #footer>
@@ -529,7 +529,8 @@ async function handleView(row) {
   try {
     const res = await getOrder(row.order_id)
     currentOrder.value = res.data || {}
-    orderDetails.value = currentOrder.value.order_items || []
+    let dish_res = await getOrderDetail(row.order_id)
+    orderDetails.value = dish_res.data;
     viewDialogVisible.value = true
   } catch (error) {
     console.error('获取订单详情失败:', error)
@@ -624,7 +625,7 @@ function removeOrderItem(index) {
 
 function calculateTotal() {
   form.total_amount = form.order_items.reduce((sum, item) => {
-    return sum + (item.price * item.quantity)
+    return sum + ((item.price | item.unit_price) * item.quantity)
   }, 0)
 }
 
@@ -672,6 +673,22 @@ function submitSettle() {
     }
   })
 }
+
+function formatDate(isoString) {
+  const date = new Date(isoString)
+
+  const pad = (n) => n.toString().padStart(2, '0')
+
+  const year = date.getFullYear()
+  const month = pad(date.getMonth() + 1)
+  const day = pad(date.getDate())
+  const hour = pad(date.getHours())
+  const minute = pad(date.getMinutes())
+  const second = pad(date.getSeconds())
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
 </script>
 
 <style scoped>
