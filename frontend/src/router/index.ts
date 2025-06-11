@@ -15,13 +15,13 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/dashboard'
+      redirect: '/dish'
     },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      component: Dashboard
-    },
+    // {
+    //   path: '/dashboard',
+    //   name: 'Dashboard',
+    //   component: Dashboard
+    // },
     {
       path: '/dish',
       name: 'Dish',

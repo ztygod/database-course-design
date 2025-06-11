@@ -60,6 +60,14 @@ export function addOrderDetail(orderId, data) {
   });
 }
 
+// 获取订单明细
+export function getOrderDetail(orderId){
+  return request({
+    url: `/order/${orderId}/detail`,
+    method: 'get',
+  })
+}
+
 // 删除订单明细
 export function deleteOrderDetail(detailId) {
   return request({
